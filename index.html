@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#FAF6F1">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>S.E.T. Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --cream: #FAF6F1;
+  --warm-white: #FFFFFF;
+  --sand: #F0E6D8;
+  --clay: #D4C4A8;
+  --terracotta: #B87333;
+  --sienna: #A0522D;
+  --bark: #6B4226;
+  --earth: #3D2B1F;
+  --sage: #8B9E6B;
+  --sage-light: #D5DFBF;
+  --moss: #6B7F4E;
+  --dusk: #9E8B7E;
+  --low-bg: #E8DDD0;
+  --low-border: #C4B09A;
+  --center-bg: #DDE8CC;
+  --center-border: #B0C48A;
+  --high-bg: #F0DCC8;
+  --high-border: #D4B08A;
+  --shadow: rgba(61, 43, 31, 0.08);
+  --shadow-md: rgba(61, 43, 31, 0.12);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-lg: 16px;
+}
+
+html { font-size: 16px; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--cream);
+  color: var(--earth);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+h1, h2, h3 { font-family: 'Lora', Georgia, serif; font-weight: 500; }
+
+/* ===== LAYOUT ===== */
+.app { max-width: 480px; margin: 0 auto; padding-bottom: 80px; }
+.screen { display: none; padding: 20px 16px; }
+.screen.active { display: block; }
+
+/* ===== NAV BAR ===== */
+.nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--warm-white);
+  border-top: 1px solid var(--sand);
+  display: flex; justify-content: space-around;
+  padding: 8px 0 env(safe-area-inset-bottom, 8px);
+  z-index: 100;
+  box-shadow: 0 -2px 12px var(--shadow);
+}
+.nav-btn {
+  background: none; border: none;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 6px 16px; cursor: pointer;
+  color: var(--dusk); font-size: 10px; font-family: 'Inter', sans-serif; font-weight: 500;
+  transition: color 0.2s;
+}
+.nav-btn.active { color: var(--sienna); }
+.nav-btn svg { width: 24px; height: 24px; }
+
+/* ===== HOME SCREEN ===== */
+.greeting { font-size: 1.5rem; margin-bottom: 4px; color: var(--bark); }
+.subtitle { color: var(--dusk); font-size: 0.875rem; margin-bottom: 24px; }
+
+.score-ring-container {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--warm-white); border-radius: var(--radius-lg);
+  padding: 28px 20px; margin-bottom: 20px;
+  box-shadow: 0 2px 12px var(--shadow);
+}
+.score-ring {
+  width: 140px; height: 140px; position: relative;
+  margin-bottom: 12px;
+}
+.score-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.score-ring-bg { fill: none; stroke: var(--sand); stroke-width: 8; }
+.score-ring-fill { fill: none; stroke: var(--sage); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease, stroke 0.4s; }
+.score-ring-label {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  text-align: center;
+}
+.score-ring-number { font-family: 'Lora', serif; font-size: 2rem; font-weight: 600; color: var(--bark); }
+.score-ring-text { font-size: 0.7rem; color: var(--dusk); text-transform: uppercase; letter-spacing: 0.05em; }
+.last-checkin-label { font-size: 0.8rem; color: var(--dusk); }
+
+.checkin-btn {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 16px;
+  background: var(--sienna); color: white;
+  border: none; border-radius: var(--radius);
+  font-family: 'Lora', serif; font-size: 1.1rem; font-weight: 500;
+  cursor: pointer; transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 4px 12px rgba(160, 82, 45, 0.25);
+  margin-bottom: 20px;
+}
+.checkin-btn:active { transform: scale(0.98); background: var(--bark); }
+
+.alarm-card {
+  background: var(--warm-white); border-radius: var(--radius);
+  padding: 16px 20px; box-shadow: 0 2px 8px var(--shadow);
+  margin-bottom: 16px;
+}
+.alarm-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.alarm-card-title { font-family: 'Lora', serif; font-size: 1rem; color: var(--bark); }
+.alarm-status {
+  font-size: 0.75rem; padding: 3px 10px; border-radius: 20px;
+  font-weight: 500;
+}
+.alarm-status.on { background: var(--sage-light); color: var(--moss); }
+.alarm-status.off { background: var(--sand); color: var(--dusk); }
+.alarm-next { font-size: 0.8rem; color: var(--dusk); }
+
+.today-entries {
+  background: var(--warm-white); border-radius: var(--radius);
+  padding: 16px 20px; box-shadow: 0 2px 8px var(--shadow);
+}
+.today-entries h3 { font-size: 0.95rem; color: var(--bark); margin-bottom: 12px; }
+.entry-mini {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 0; border-bottom: 1px solid var(--sand);
+}
+.entry-mini:last-child { border-bottom: none; }
+.entry-time { font-size: 0.75rem; color: var(--dusk); min-width: 50px; }
+.entry-dots { display: flex; gap: 6px; }
+.entry-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.65rem; font-weight: 600; color: white;
+}
+.entry-dot.s { background: var(--terracotta); }
+.entry-dot.e { background: var(--sage); }
+.entry-dot.t { background: var(--dusk); }
+.entry-set { font-size: 0.8rem; font-weight: 600; color: var(--bark); margin-left: auto; }
+.no-entries { font-size: 0.85rem; color: var(--dusk); font-style: italic; padding: 8px 0; }
+
+/* ===== CHECK-IN FLOW ===== */
+.checkin-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 4px;
+}
+.checkin-close {
+  background: none; border: none; font-size: 1.5rem; color: var(--dusk);
+  cursor: pointer; padding: 4px 8px; line-height: 1;
+}
+.checkin-progress {
+  display: flex; gap: 6px; margin-bottom: 20px;
+}
+.checkin-progress-dot {
+  flex: 1; height: 4px; border-radius: 2px; background: var(--sand);
+  transition: background 0.3s;
+}
+.checkin-progress-dot.done { background: var(--sienna); }
+.checkin-progress-dot.current { background: var(--terracotta); }
+
+.dimension-title { font-size: 1.4rem; color: var(--bark); margin-bottom: 4px; }
+.dimension-subtitle { font-size: 0.85rem; color: var(--dusk); margin-bottom: 20px; line-height: 1.5; }
+
+.zone {
+  margin-bottom: 16px; border-radius: var(--radius);
+  overflow: hidden; border: 2px solid transparent;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.zone.selected { box-shadow: 0 2px 12px var(--shadow-md); }
+.zone-low { background: var(--low-bg); }
+.zone-low.selected { border-color: var(--low-border); }
+.zone-center { background: var(--center-bg); }
+.zone-center.selected { border-color: var(--center-border); }
+.zone-high { background: var(--high-bg); }
+.zone-high.selected { border-color: var(--high-border); }
+
+.zone-header {
+  padding: 12px 16px 8px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.zone-label { font-family: 'Lora', serif; font-size: 0.95rem; font-weight: 500; }
+.zone-score-hint { font-size: 0.7rem; color: var(--dusk); opacity: 0.7; }
+.zone-chips { padding: 4px 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+
+.chip {
+  padding: 7px 14px; border-radius: 20px;
+  font-size: 0.8rem; font-weight: 400;
+  cursor: pointer; transition: all 0.15s;
+  border: 1.5px solid transparent;
+  user-select: none; -webkit-user-select: none;
+}
+.zone-low .chip { background: rgba(255,255,255,0.5); color: var(--bark); }
+.zone-low .chip.selected { background: var(--sienna); color: white; border-color: var(--sienna); }
+.zone-center .chip { background: rgba(255,255,255,0.6); color: var(--moss); }
+.zone-center .chip.selected { background: var(--moss); color: white; border-color: var(--moss); }
+.zone-high .chip { background: rgba(255,255,255,0.5); color: var(--bark); }
+.zone-high .chip.selected { background: var(--terracotta); color: white; border-color: var(--terracotta); }
+
+.chip:active { transform: scale(0.95); }
+
+.checkin-nav {
+  display: flex; gap: 12px; margin-top: 20px; padding-bottom: 20px;
+}
+.btn-secondary {
+  flex: 1; padding: 14px;
+  background: var(--warm-white); color: var(--bark);
+  border: 1.5px solid var(--clay); border-radius: var(--radius);
+  font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+}
+.btn-primary {
+  flex: 2; padding: 14px;
+  background: var(--sienna); color: white;
+  border: none; border-radius: var(--radius);
+  font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 500;
+  cursor: pointer; transition: all 0.15s;
+  box-shadow: 0 3px 10px rgba(160, 82, 45, 0.2);
+}
+.btn-primary:active { background: var(--bark); transform: scale(0.98); }
+.btn-primary:disabled { background: var(--clay); box-shadow: none; }
+
+/* ===== SUMMARY SCREEN ===== */
+.summary-card {
+  background: var(--warm-white); border-radius: var(--radius-lg);
+  padding: 24px; text-align: center;
+  box-shadow: 0 4px 20px var(--shadow-md);
+  margin-bottom: 20px;
+}
+.summary-title { font-size: 1.3rem; color: var(--bark); margin-bottom: 16px; }
+.summary-dimensions {
+  display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;
+}
+.summary-dim { text-align: center; }
+.summary-dim-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--dusk); margin-bottom: 4px; }
+.summary-dim-score {
+  width: 56px; height: 56px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Lora', serif; font-size: 1.2rem; font-weight: 600; color: white;
+  margin: 0 auto 4px;
+}
+.summary-dim-word { font-size: 0.75rem; color: var(--bark); max-width: 80px; }
+.summary-composite {
+  padding-top: 16px; border-top: 1px solid var(--sand);
+}
+.summary-composite-label { font-size: 0.75rem; color: var(--dusk); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+.summary-composite-score { font-family: 'Lora', serif; font-size: 2.2rem; font-weight: 600; color: var(--bark); }
+.summary-composite-desc { font-size: 0.85rem; color: var(--dusk); margin-top: 2px; }
+
+.summary-selections {
+  background: var(--warm-white); border-radius: var(--radius);
+  padding: 16px 20px; box-shadow: 0 2px 8px var(--shadow);
+  margin-bottom: 20px; text-align: left;
+}
+.summary-selections h3 { font-size: 0.95rem; color: var(--bark); margin-bottom: 12px; }
+.summary-sel-group { margin-bottom: 12px; }
+.summary-sel-group:last-child { margin-bottom: 0; }
+.summary-sel-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dusk); margin-bottom: 6px; }
+.summary-sel-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.summary-chip {
+  padding: 5px 12px; border-radius: 16px;
+  font-size: 0.75rem; font-weight: 500; color: white;
+}
+
+.notes-input {
+  width: 100%; padding: 12px 16px;
+  border: 1.5px solid var(--clay); border-radius: var(--radius);
+  font-family: 'Inter', sans-serif; font-size: 0.9rem;
+  color: var(--earth); background: var(--warm-white);
+  resize: vertical; min-height: 60px;
+  margin-bottom: 16px;
+}
+.notes-input::placeholder { color: var(--clay); }
+.notes-input:focus { outline: none; border-color: var(--sienna); }
+
+/* ===== HISTORY SCREEN ===== */
+.history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.history-title { font-size: 1.4rem; color: var(--bark); }
+.export-btn {
+  padding: 8px 16px; background: var(--warm-white);
+  border: 1.5px solid var(--clay); border-radius: var(--radius-sm);
+  font-size: 0.8rem; font-weight: 500; color: var(--bark);
+  cursor: pointer; font-family: 'Inter', sans-serif;
+}
+.export-btn:active { background: var(--sand); }
+
+.date-group { margin-bottom: 24px; }
+.date-label {
+  font-family: 'Lora', serif; font-size: 0.9rem; color: var(--dusk);
+  margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--sand);
+}
+.history-entry {
+  background: var(--warm-white); border-radius: var(--radius);
+  padding: 14px 16px; margin-bottom: 8px;
+  box-shadow: 0 1px 6px var(--shadow);
+  cursor: pointer; transition: box-shadow 0.15s;
+}
+.history-entry:active { box-shadow: 0 2px 10px var(--shadow-md); }
+.history-entry-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.history-entry-time { font-size: 0.8rem; color: var(--dusk); }
+.history-entry-set { font-family: 'Lora', serif; font-size: 1.1rem; font-weight: 600; color: var(--bark); }
+.history-entry-bars { display: flex; gap: 8px; }
+.history-bar-group { flex: 1; }
+.history-bar-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--dusk); margin-bottom: 3px; }
+.history-bar {
+  height: 6px; border-radius: 3px; background: var(--sand);
+  overflow: hidden;
+}
+.history-bar-fill { height: 100%; border-radius: 3px; transition: width 0.4s; }
+.history-bar-fill.s { background: var(--terracotta); }
+.history-bar-fill.e { background: var(--sage); }
+.history-bar-fill.t { background: var(--dusk); }
+.history-chips-preview { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+.history-chip-mini {
+  padding: 2px 8px; border-radius: 10px; font-size: 0.65rem;
+  background: var(--sand); color: var(--bark);
+}
+
+/* ===== SETTINGS SCREEN ===== */
+.settings-title { font-size: 1.4rem; color: var(--bark); margin-bottom: 20px; }
+.setting-group {
+  background: var(--warm-white); border-radius: var(--radius);
+  padding: 16px 20px; box-shadow: 0 2px 8px var(--shadow);
+  margin-bottom: 16px;
+}
+.setting-group h3 { font-family: 'Lora', serif; font-size: 1rem; color: var(--bark); margin-bottom: 12px; }
+.setting-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 10px 0; border-bottom: 1px solid var(--sand);
+}
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-size: 0.85rem; color: var(--earth); }
+.setting-hint { font-size: 0.7rem; color: var(--dusk); margin-top: 2px; }
+
+/* Toggle switch */
+.toggle { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; background: var(--clay);
+  border-radius: 14px; cursor: pointer; transition: background 0.2s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute;
+  width: 22px; height: 22px; left: 3px; top: 3px;
+  background: white; border-radius: 50%; transition: transform 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+.toggle input:checked + .toggle-slider { background: var(--sage); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+select.setting-select {
+  padding: 6px 12px; border: 1.5px solid var(--clay);
+  border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
+  font-size: 0.85rem; color: var(--earth); background: var(--warm-white);
+  cursor: pointer;
+}
+select.setting-select:focus { outline: none; border-color: var(--sienna); }
+
+.time-input {
+  padding: 6px 10px; border: 1.5px solid var(--clay);
+  border-radius: var(--radius-sm); font-family: 'Inter', sans-serif;
+  font-size: 0.85rem; color: var(--earth); background: var(--warm-white);
+}
+.time-input:focus { outline: none; border-color: var(--sienna); }
+
+.danger-btn {
+  width: 100%; padding: 12px; margin-top: 8px;
+  background: none; border: 1.5px solid #C0392B; border-radius: var(--radius);
+  color: #C0392B; font-family: 'Inter', sans-serif; font-size: 0.85rem;
+  font-weight: 500; cursor: pointer;
+}
+
+/* ===== ALARM OVERLAY ===== */
+.alarm-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(61, 43, 31, 0.6); backdrop-filter: blur(4px);
+  justify-content: center; align-items: center; padding: 20px;
+}
+.alarm-overlay.active { display: flex; }
+.alarm-card-popup {
+  background: var(--warm-white); border-radius: var(--radius-lg);
+  padding: 32px 24px; text-align: center; max-width: 320px; width: 100%;
+  box-shadow: 0 8px 32px rgba(61, 43, 31, 0.3);
+  animation: popIn 0.3s ease;
+}
+@keyframes popIn {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.alarm-icon { font-size: 2.5rem; margin-bottom: 12px; }
+.alarm-popup-title { font-family: 'Lora', serif; font-size: 1.2rem; color: var(--bark); margin-bottom: 6px; }
+.alarm-popup-sub { font-size: 0.85rem; color: var(--dusk); margin-bottom: 20px; }
+.alarm-popup-btn {
+  width: 100%; padding: 14px; background: var(--sienna); color: white;
+  border: none; border-radius: var(--radius);
+  font-family: 'Lora', serif; font-size: 1rem; font-weight: 500;
+  cursor: pointer; margin-bottom: 8px;
+}
+.alarm-dismiss {
+  background: none; border: none; color: var(--dusk);
+  font-size: 0.85rem; cursor: pointer; padding: 8px;
+  font-family: 'Inter', sans-serif;
+}
+
+/* ===== EXPORT MODAL ===== */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(61, 43, 31, 0.5); backdrop-filter: blur(3px);
+  justify-content: center; align-items: flex-end; padding: 16px;
+}
+.modal-overlay.active { display: flex; }
+.modal-sheet {
+  background: var(--warm-white); border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: 24px; width: 100%; max-width: 480px;
+  animation: slideUp 0.3s ease;
+}
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.modal-sheet h3 { font-family: 'Lora', serif; font-size: 1.1rem; color: var(--bark); margin-bottom: 16px; }
+.modal-option {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0; border-bottom: 1px solid var(--sand);
+  cursor: pointer;
+}
+.modal-option:last-of-type { border-bottom: none; }
+.modal-option-icon { font-size: 1.3rem; }
+.modal-option-text { font-size: 0.9rem; color: var(--earth); }
+.modal-option-hint { font-size: 0.75rem; color: var(--dusk); }
+.modal-cancel {
+  width: 100%; padding: 12px; margin-top: 12px;
+  background: var(--sand); border: none; border-radius: var(--radius);
+  font-family: 'Inter', sans-serif; font-size: 0.9rem; color: var(--bark);
+  cursor: pointer; font-weight: 500;
+}
+
+/* ===== DETAIL MODAL ===== */
+.detail-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(61, 43, 31, 0.5); backdrop-filter: blur(3px);
+  justify-content: center; align-items: center; padding: 16px;
+}
+.detail-overlay.active { display: flex; }
+.detail-card {
+  background: var(--warm-white); border-radius: var(--radius-lg);
+  padding: 24px; width: 100%; max-width: 400px;
+  max-height: 80vh; overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(61, 43, 31, 0.25);
+}
+.detail-card h3 { font-family: 'Lora', serif; font-size: 1.1rem; color: var(--bark); margin-bottom: 16px; }
+.detail-close {
+  float: right; background: none; border: none;
+  font-size: 1.3rem; color: var(--dusk); cursor: pointer;
+}
+.detail-section { margin-bottom: 14px; }
+.detail-section-title { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dusk); margin-bottom: 6px; }
+.detail-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.detail-chip { padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; color: white; }
+.detail-notes { font-size: 0.85rem; color: var(--earth); font-style: italic; line-height: 1.5; margin-top: 4px; }
+
+/* ===== QUOTE ===== */
+.quote-card {
+  background: var(--warm-white); border-radius: var(--radius);
+  padding: 16px 20px; margin-bottom: 16px;
+  box-shadow: 0 2px 8px var(--shadow);
+  border-left: 3px solid var(--sage);
+}
+.quote-text { font-family: 'Lora', serif; font-style: italic; font-size: 0.85rem; color: var(--bark); line-height: 1.6; }
+
+/* Utility */
+.fade-in { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ===== HOME SCREEN ===== -->
+  <div class="screen active" id="screen-home">
+    <h1 class="greeting" id="greeting">Good morning, Siva</h1>
+    <p class="subtitle" id="home-subtitle">How are you arriving today?</p>
+
+    <div class="quote-card" id="quote-card">
+      <p class="quote-text" id="daily-quote">"Just notice. No discipline, no force, no judgments."</p>
+    </div>
+
+    <div class="score-ring-container" id="score-ring-container">
+      <div class="score-ring">
+        <svg viewBox="0 0 140 140">
+          <circle class="score-ring-bg" cx="70" cy="70" r="60"/>
+          <circle class="score-ring-fill" id="score-ring-fill" cx="70" cy="70" r="60"
+            stroke-dasharray="377" stroke-dashoffset="377"/>
+        </svg>
+        <div class="score-ring-label">
+          <div class="score-ring-number" id="score-ring-number">—</div>
+          <div class="score-ring-text">SET score</div>
+        </div>
+      </div>
+      <p class="last-checkin-label" id="last-checkin-label">No check-ins yet today</p>
+    </div>
+
+    <button class="checkin-btn" onclick="startCheckin()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      Check In Now
+    </button>
+
+    <div class="alarm-card">
+      <div class="alarm-card-header">
+        <span class="alarm-card-title">Reminder Alarm</span>
+        <span class="alarm-status" id="alarm-status-badge">OFF</span>
+      </div>
+      <p class="alarm-next" id="alarm-next-text">Tap settings to configure</p>
+    </div>
+
+    <div class="today-entries" id="today-entries-container">
+      <h3>Today's Check-ins</h3>
+      <div id="today-entries-list">
+        <p class="no-entries">Start your first check-in to see entries here</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CHECK-IN SCREENS ===== -->
+  <div class="screen" id="screen-checkin">
+    <div class="checkin-header">
+      <h2 id="checkin-step-label">Step 1 of 3</h2>
+      <button class="checkin-close" onclick="cancelCheckin()">&times;</button>
+    </div>
+    <div class="checkin-progress">
+      <div class="checkin-progress-dot" id="prog-1"></div>
+      <div class="checkin-progress-dot" id="prog-2"></div>
+      <div class="checkin-progress-dot" id="prog-3"></div>
+    </div>
+
+    <div id="checkin-content"></div>
+
+    <div class="checkin-nav">
+      <button class="btn-secondary" id="checkin-back" onclick="checkinBack()">Back</button>
+      <button class="btn-primary" id="checkin-next" onclick="checkinNext()">Next</button>
+    </div>
+  </div>
+
+  <!-- ===== SUMMARY SCREEN ===== -->
+  <div class="screen" id="screen-summary">
+    <div class="checkin-header">
+      <h2>Check-in Complete</h2>
+      <button class="checkin-close" onclick="closeSummary()">&times;</button>
+    </div>
+
+    <div class="summary-card fade-in" id="summary-card"></div>
+    <div class="summary-selections fade-in" id="summary-selections"></div>
+
+    <textarea class="notes-input" id="summary-notes" placeholder="Any context? (e.g. just finished clinic, market choppy, argument earlier...)"></textarea>
+
+    <button class="btn-primary" style="width:100%" onclick="saveCheckin()">Save Check-in</button>
+  </div>
+
+  <!-- ===== HISTORY SCREEN ===== -->
+  <div class="screen" id="screen-history">
+    <div class="history-header">
+      <h2 class="history-title">History</h2>
+      <button class="export-btn" onclick="showExportModal()">Export</button>
+    </div>
+    <div id="history-list"></div>
+  </div>
+
+  <!-- ===== SETTINGS SCREEN ===== -->
+  <div class="screen" id="screen-settings">
+    <h2 class="settings-title">Settings</h2>
+
+    <div class="setting-group">
+      <h3>Trading Session Alarm</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Enable alarm</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="alarm-enabled" onchange="saveSettings()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Interval</div>
+          <div class="setting-hint">During trading hours</div>
+        </div>
+        <select class="setting-select" id="trading-interval" onchange="saveSettings()">
+          <option value="5">Every 5 min</option>
+          <option value="10">Every 10 min</option>
+          <option value="15">Every 15 min</option>
+          <option value="30">Every 30 min</option>
+        </select>
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Trading start</div></div>
+        <input type="time" class="time-input" id="trading-start" value="14:30" onchange="saveSettings()">
+      </div>
+      <div class="setting-row">
+        <div><div class="setting-label">Trading end</div></div>
+        <input type="time" class="time-input" id="trading-end" value="21:00" onchange="saveSettings()">
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <h3>Rest-of-Day Alarm</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Enable</div>
+          <div class="setting-hint">Outside trading hours</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="rest-alarm-enabled" onchange="saveSettings()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Interval</div>
+        </div>
+        <select class="setting-select" id="rest-interval" onchange="saveSettings()">
+          <option value="30">Every 30 min</option>
+          <option value="60" selected>Every 1 hour</option>
+          <option value="120">Every 2 hours</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <h3>Weekend Alarm</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Enable</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="weekend-alarm-enabled" onchange="saveSettings()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Interval</div>
+        </div>
+        <select class="setting-select" id="weekend-interval" onchange="saveSettings()">
+          <option value="60">Every 1 hour</option>
+          <option value="120" selected>Every 2 hours</option>
+          <option value="180">Every 3 hours</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <h3>Notifications</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Browser notifications</div>
+          <div class="setting-hint" id="notif-hint">Not yet permitted</div>
+        </div>
+        <button class="export-btn" id="notif-btn" onclick="requestNotifPermission()">Allow</button>
+      </div>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Sound</div>
+        </div>
+        <label class="toggle">
+          <input type="checkbox" id="sound-enabled" checked onchange="saveSettings()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <h3>Data</h3>
+      <div class="setting-row">
+        <div>
+          <div class="setting-label">Total check-ins</div>
+        </div>
+        <span id="total-checkins">0</span>
+      </div>
+      <button class="danger-btn" onclick="clearAllData()">Clear All Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== BOTTOM NAV ===== -->
+<nav class="nav">
+  <button class="nav-btn active" data-screen="home" onclick="showScreen('home')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    Home
+  </button>
+  <button class="nav-btn" data-screen="history" onclick="showScreen('history')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+    History
+  </button>
+  <button class="nav-btn" data-screen="settings" onclick="showScreen('settings')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    Settings
+  </button>
+</nav>
+
+<!-- ===== ALARM OVERLAY ===== -->
+<div class="alarm-overlay" id="alarm-overlay">
+  <div class="alarm-card-popup">
+    <div class="alarm-icon">🔔</div>
+    <h3 class="alarm-popup-title">Time to check in</h3>
+    <p class="alarm-popup-sub">Pause. Notice. No judgments.</p>
+    <button class="alarm-popup-btn" onclick="alarmCheckin()">Check In</button>
+    <button class="alarm-dismiss" onclick="dismissAlarm()">Not now</button>
+  </div>
+</div>
+
+<!-- ===== EXPORT MODAL ===== -->
+<div class="modal-overlay" id="export-modal">
+  <div class="modal-sheet">
+    <h3>Export Your Data</h3>
+    <div class="modal-option" onclick="exportCSV()">
+      <span class="modal-option-icon">📊</span>
+      <div>
+        <div class="modal-option-text">CSV Spreadsheet</div>
+        <div class="modal-option-hint">Open in Excel or Google Sheets</div>
+      </div>
+    </div>
+    <div class="modal-option" onclick="exportTherapist()">
+      <span class="modal-option-icon">📋</span>
+      <div>
+        <div class="modal-option-text">Therapist Report</div>
+        <div class="modal-option-hint">Formatted summary with patterns and insights</div>
+      </div>
+    </div>
+    <div class="modal-option" onclick="exportJSON()">
+      <span class="modal-option-icon">💾</span>
+      <div>
+        <div class="modal-option-text">Full Backup (JSON)</div>
+        <div class="modal-option-hint">All raw data for import/backup</div>
+      </div>
+    </div>
+    <button class="modal-cancel" onclick="closeExportModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- ===== DETAIL MODAL ===== -->
+<div class="detail-overlay" id="detail-overlay" onclick="closeDetail(event)">
+  <div class="detail-card" id="detail-card"></div>
+</div>
+
+<script>
+// ===== DATA STRUCTURES =====
+const DESCRIPTORS = {
+  sensations: {
+    low: [
+      // Energy & fatigue
+      { text: 'Exhausted', score: -5 },
+      { text: 'Sleepy', score: -3 },
+      { text: 'Drowsy', score: -2 },
+      { text: 'Foggy-headed', score: -3 },
+      { text: 'Heavy limbs', score: -3 },
+      { text: 'No stamina', score: -4 },
+      { text: 'Drained', score: -4 },
+      { text: 'Lethargic', score: -3 },
+      { text: 'Post-clinic crash', score: -3 },
+      { text: 'Sleep-deprived', score: -4 },
+      { text: 'Hungover feeling', score: -3 },
+      // Digestion & appetite
+      { text: 'Stomach upset', score: -3 },
+      { text: 'Nauseous', score: -4 },
+      { text: 'No appetite', score: -3 },
+      { text: 'Bloated', score: -2 },
+      { text: 'Skipped meals', score: -2 },
+      { text: 'Comfort-eating aftermath', score: -2 },
+      // Musculoskeletal
+      { text: 'Sore muscles', score: -2 },
+      { text: 'Body aches', score: -3 },
+      { text: 'Stiff neck', score: -2 },
+      { text: 'Lower back pain', score: -2 },
+      { text: 'Aching from sitting all day', score: -2 },
+      { text: 'Physically weak', score: -3 },
+      // Breathing & heart
+      { text: 'Shallow breathing', score: -2 },
+      { text: 'Sighing a lot', score: -2 },
+      { text: 'Uneven heartbeat', score: -3 },
+      { text: 'Yawning constantly', score: -2 },
+      // Posture & presence
+      { text: 'Slumping posture', score: -2 },
+      { text: 'Can\'t focus eyes', score: -3 },
+      { text: 'Eyes glazed over', score: -3 },
+      { text: 'Staring into space', score: -3 },
+      // Hydration & illness
+      { text: 'Dehydrated', score: -2 },
+      { text: 'Feeling unwell', score: -4 },
+      { text: 'Headache', score: -3 },
+      { text: 'Cold hands/feet', score: -2 },
+      { text: 'Run down', score: -3 },
+      // Emotional-somatic
+      { text: 'Chest feels heavy', score: -3 },
+      { text: 'Lump in throat', score: -3 },
+      { text: 'Numb / disconnected', score: -4 },
+      { text: 'Want to curl up', score: -4 },
+      { text: 'Weighed down', score: -3 },
+      { text: 'Body feels fragile', score: -3 },
+    ],
+    center: [
+      // Energy
+      { text: 'Well rested', score: 0 },
+      { text: 'Energy reserves', score: 0 },
+      { text: 'Alert but calm', score: 0 },
+      { text: 'Pleasantly warm', score: 0 },
+      { text: 'Fresh after sleep', score: 0 },
+      { text: 'Naturally awake', score: 0 },
+      // Digestion
+      { text: 'Relaxed stomach', score: 0 },
+      { text: 'Enjoying food slowly', score: 0 },
+      { text: 'Satisfied after eating', score: 0 },
+      { text: 'Eating mindfully', score: 0 },
+      // Muscles & body
+      { text: 'Body feels exercised', score: 0 },
+      { text: 'Muscles loose', score: 0 },
+      { text: 'Good health', score: 0 },
+      { text: 'Jaw relaxed', score: 0 },
+      { text: 'Shoulders dropped', score: 0 },
+      { text: 'Physically comfortable', score: 0 },
+      { text: 'Post-walk glow', score: 0 },
+      { text: 'Body feels strong', score: 0 },
+      // Breathing & heart
+      { text: 'Deep slow breathing', score: 0 },
+      { text: 'Steady heartbeat', score: 0 },
+      { text: 'Breathing into belly', score: 0 },
+      // Posture & presence
+      { text: 'Upright & grounded', score: 0 },
+      { text: 'Wide relaxed gaze', score: 0 },
+      { text: 'Feet feel the floor', score: 0 },
+      { text: 'Hands still & open', score: 0 },
+      // Hydration
+      { text: 'Hydrated', score: 0 },
+      // Emotional-somatic
+      { text: 'Lightness in body', score: 0 },
+      { text: 'Settled & still', score: 0 },
+      { text: 'Body feels safe', score: 0 },
+      { text: 'Cosy', score: 0 },
+      { text: 'Sensory pleasure (sun, breeze, etc.)', score: 0 },
+    ],
+    high: [
+      // Energy & activation
+      { text: 'Hyper energetic', score: 4 },
+      { text: 'Wired', score: 4 },
+      { text: 'Can\'t sit still', score: 3 },
+      { text: 'Buzzing sensation', score: 3 },
+      { text: 'Adrenaline rush', score: 4 },
+      { text: 'Can\'t sleep', score: 4 },
+      { text: 'Too much caffeine', score: 2 },
+      { text: 'Wired but tired', score: 3 },
+      { text: 'Second wind (artificial)', score: 2 },
+      // Digestion & appetite
+      { text: 'Butterflies', score: 2 },
+      { text: 'Eating rapidly', score: 2 },
+      { text: 'Stress eating', score: 3 },
+      { text: 'Stomach churning', score: 3 },
+      { text: 'No hunger awareness', score: 2 },
+      { text: 'Sugar/caffeine craving', score: 2 },
+      // Muscles & body
+      { text: 'Muscle tension', score: 3 },
+      { text: 'Jaw clenching', score: 3 },
+      { text: 'Shoulders up by ears', score: 3 },
+      { text: 'Fists clenching', score: 3 },
+      { text: 'Grinding teeth', score: 3 },
+      { text: 'Tension headache building', score: 3 },
+      // Breathing & heart
+      { text: 'Rapid breathing', score: 3 },
+      { text: 'Holding breath', score: 3 },
+      { text: 'Racing heart', score: 4 },
+      { text: 'Heart pounding', score: 4 },
+      { text: 'Chest tightness', score: 3 },
+      // Posture & presence
+      { text: 'Tunnel vision', score: 3 },
+      { text: 'Leaning into screen', score: 2 },
+      { text: 'Eyes darting', score: 3 },
+      { text: 'Glued to phone', score: 2 },
+      // Hydration & physical
+      { text: 'Dry mouth', score: 2 },
+      { text: 'Sweating', score: 3 },
+      { text: 'Flushed face', score: 3 },
+      { text: 'Hot under the collar', score: 2 },
+      // Movement
+      { text: 'Leg bouncing', score: 2 },
+      { text: 'Restless', score: 3 },
+      { text: 'Pacing', score: 3 },
+      { text: 'Fidgeting', score: 2 },
+      { text: 'Driving body hard', score: 4 },
+      { text: 'Can\'t stop moving', score: 3 },
+    ]
+  },
+  emotions: {
+    low: [
+      // Shutdown & freeze
+      { text: 'Frozen', score: -5 },
+      { text: 'Numb', score: -4 },
+      { text: 'Shut down', score: -5 },
+      { text: 'Dissociated', score: -5 },
+      { text: 'Going through the motions', score: -3 },
+      // Sadness & grief
+      { text: 'Sad', score: -3 },
+      { text: 'Grief', score: -4 },
+      { text: 'Lonely', score: -3 },
+      { text: 'Homesick', score: -2 },
+      { text: 'Tearful', score: -3 },
+      { text: 'Missing someone', score: -2 },
+      { text: 'Nostalgic / wistful', score: -2 },
+      // Depression & despair
+      { text: 'Depressed', score: -5 },
+      { text: 'Hopeless', score: -5 },
+      { text: 'Despairing', score: -5 },
+      { text: 'Empty', score: -4 },
+      { text: 'Flat', score: -3 },
+      { text: 'Can\'t feel anything', score: -4 },
+      // Self-directed
+      { text: 'Self-critical', score: -3 },
+      { text: 'Ashamed', score: -4 },
+      { text: 'Guilty', score: -3 },
+      { text: 'Not good enough', score: -4 },
+      { text: 'Worthless', score: -5 },
+      { text: 'Embarrassed', score: -2 },
+      { text: 'Self-conscious', score: -2 },
+      { text: 'Disappointed in myself', score: -3 },
+      // Avoidance & withdrawal
+      { text: 'Avoiding', score: -3 },
+      { text: 'Withdrawn', score: -4 },
+      { text: 'Hiding', score: -3 },
+      { text: 'Want to disappear', score: -4 },
+      { text: 'Dreading social contact', score: -3 },
+      { text: 'Want to cancel plans', score: -2 },
+      // Cognitive-emotional
+      { text: 'Confused', score: -2 },
+      { text: 'Disengaged', score: -3 },
+      { text: 'Disorganised', score: -2 },
+      { text: 'Apathetic', score: -4 },
+      { text: 'Indifferent', score: -3 },
+      { text: 'Procrastinating', score: -2 },
+      { text: 'Bored', score: -2 },
+      { text: 'Unmotivated', score: -3 },
+      // Fear (low-energy)
+      { text: 'Dread', score: -4 },
+      { text: 'Defeated', score: -4 },
+      { text: 'Resigned', score: -3 },
+      { text: 'Trapped', score: -4 },
+      { text: 'Helpless', score: -4 },
+      { text: 'Stuck', score: -3 },
+      // Longing & resentment
+      { text: 'Envious', score: -2 },
+      { text: 'Resentful', score: -3 },
+      { text: 'Bitter', score: -3 },
+      { text: 'Let down', score: -3 },
+      { text: 'Unappreciated', score: -3 },
+      { text: 'Taken for granted', score: -3 },
+    ],
+    center: [
+      // Flow & engagement
+      { text: 'Flexible, in flow', score: 0 },
+      { text: 'Engaged but not attached', score: 0 },
+      { text: 'Absorbed in process', score: 0 },
+      { text: 'Playful', score: 0 },
+      { text: 'Enjoying the moment', score: 0 },
+      // Acceptance & peace
+      { text: 'Accepting', score: 0 },
+      { text: 'At peace', score: 0 },
+      { text: 'Content', score: 0 },
+      { text: 'Grateful', score: 0 },
+      { text: 'Forgiving', score: 0 },
+      { text: 'Serene', score: 0 },
+      { text: 'Unbothered', score: 0 },
+      // Curiosity & openness
+      { text: 'Curious & ready', score: 0 },
+      { text: 'Open-minded', score: 0 },
+      { text: 'Interested', score: 0 },
+      { text: 'Wondering', score: 0 },
+      // Confidence & clarity
+      { text: 'Clear-headed', score: 0 },
+      { text: 'Quietly confident', score: 0 },
+      { text: 'Decisive', score: 0 },
+      { text: 'Patient', score: 0 },
+      { text: 'Self-assured', score: 0 },
+      { text: 'Trusting the process', score: 0 },
+      // Connection & relationships
+      { text: 'Compassionate', score: 0 },
+      { text: 'Generous', score: 0 },
+      { text: 'Connected', score: 0 },
+      { text: 'Warm toward others', score: 0 },
+      { text: 'Loving', score: 0 },
+      { text: 'Feeling close to family', score: 0 },
+      { text: 'Enjoying company', score: 0 },
+      { text: 'Comfortable alone', score: 0 },
+      // Positive energy
+      { text: 'Enthusiastic', score: 0 },
+      { text: 'Joyful', score: 0 },
+      { text: 'Hopeful', score: 0 },
+      { text: 'Organised', score: 0 },
+      { text: 'Energised but steady', score: 0 },
+      { text: 'Relaxed', score: 0 },
+      { text: 'Amused', score: 0 },
+      // Safe & grounded
+      { text: 'Safe enough to be wrong', score: 0 },
+      { text: 'Trusting my edge', score: 0 },
+      { text: 'Feeling at home', score: 0 },
+    ],
+    high: [
+      // Anger spectrum
+      { text: 'Irritable', score: 2 },
+      { text: 'Frustrated', score: 2 },
+      { text: 'Angry', score: 4 },
+      { text: 'Furious', score: 5 },
+      { text: 'Rageful', score: 5 },
+      { text: 'Snappy', score: 2 },
+      { text: 'Resentful heat', score: 3 },
+      { text: 'Annoyed at family/partner', score: 2 },
+      { text: 'Road rage energy', score: 3 },
+      // Anxiety & fear (high-energy)
+      { text: 'Anxious', score: 3 },
+      { text: 'Worried', score: 2 },
+      { text: 'Panicky', score: 4 },
+      { text: 'On edge', score: 3 },
+      { text: 'Paranoid', score: 4 },
+      { text: 'Hyper-vigilant', score: 3 },
+      { text: 'Social anxiety', score: 3 },
+      { text: 'Health anxiety', score: 3 },
+      { text: 'Money anxiety', score: 3 },
+      { text: 'Dreading tomorrow', score: 3 },
+      // Impulsivity & urgency
+      { text: 'Impulsive', score: 2 },
+      { text: 'Urgent', score: 3 },
+      { text: 'Impatient', score: 2 },
+      { text: 'Reckless', score: 4 },
+      { text: 'Urge to spend/buy', score: 3 },
+      { text: 'Craving distraction', score: 2 },
+      // Obsession & intensity
+      { text: 'Obsessed', score: 4 },
+      { text: 'Intense', score: 3 },
+      { text: 'Detail-obsessed', score: 3 },
+      { text: 'Fixated', score: 4 },
+      { text: 'Unrelenting', score: 4 },
+      { text: 'Perfectionistic', score: 3 },
+      // Mania & chaos
+      { text: 'Manic', score: 5 },
+      { text: 'Chaotic', score: 4 },
+      { text: 'Overwhelmed', score: 3 },
+      { text: 'Scattered', score: 3 },
+      { text: 'Overstimulated', score: 3 },
+      { text: 'Too many tabs open (mentally)', score: 2 },
+      // Dominance & control
+      { text: 'Demanding', score: 3 },
+      { text: 'Aggressive', score: 4 },
+      { text: 'Certain I\'m right', score: 3 },
+      { text: 'Righteous', score: 4 },
+      { text: 'Contemptuous', score: 4 },
+      { text: 'Cocky', score: 4 },
+      { text: 'Invincible', score: 5 },
+      { text: 'Controlling', score: 3 },
+      // Jealousy & competition
+      { text: 'Jealous', score: 3 },
+      { text: 'Competitive', score: 2 },
+      { text: 'Need to prove myself', score: 3 },
+      { text: 'FOMO', score: 2 },
+    ]
+  },
+  thoughts: {
+    low: [
+      // Self-attack
+      { text: 'Self-critical voice', score: -3 },
+      { text: '"I\'m not smart enough"', score: -4 },
+      { text: '"I always mess this up"', score: -4 },
+      { text: '"I\'m a fraud"', score: -4 },
+      { text: '"I don\'t deserve this"', score: -4 },
+      { text: '"What\'s wrong with me?"', score: -3 },
+      { text: '"I\'m letting people down"', score: -3 },
+      // Hopelessness
+      { text: '"What\'s the point?"', score: -5 },
+      { text: '"I can\'t do this"', score: -4 },
+      { text: '"Nothing will change"', score: -5 },
+      { text: '"I should just quit"', score: -5 },
+      { text: '"This will never work"', score: -4 },
+      // Negative loops
+      { text: 'Negative loops', score: -4 },
+      { text: 'Replaying failures', score: -4 },
+      { text: 'Ruminating', score: -3 },
+      { text: 'Rehearsing arguments', score: -3 },
+      { text: 'Replaying conversations', score: -2 },
+      { text: '"I should have said..."', score: -2 },
+      { text: 'Replaying the GMC hearing', score: -4 },
+      // Fear & catastrophising
+      { text: 'Fearing the future', score: -3 },
+      { text: 'Catastrophising', score: -4 },
+      { text: '"What if it all goes wrong?"', score: -3 },
+      { text: 'Imagining worst case', score: -3 },
+      { text: 'Worrying about money', score: -3 },
+      { text: 'Worrying about health', score: -3 },
+      { text: '"What if they find out?"', score: -4 },
+      // Withdrawal
+      { text: 'Mind going blank', score: -3 },
+      { text: 'Can\'t think clearly', score: -3 },
+      { text: 'Foggy thinking', score: -2 },
+      { text: 'Avoiding decisions', score: -2 },
+      { text: 'Dark stories', score: -5 },
+      { text: 'Zoning out', score: -2 },
+      { text: 'Mindless scrolling', score: -2 },
+      // Comparison
+      { text: 'Comparing to others', score: -3 },
+      { text: '"Everyone else can do this"', score: -3 },
+      { text: '"I started too late"', score: -3 },
+      { text: '"They have it easier"', score: -3 },
+      { text: 'Social media comparison', score: -2 },
+      // Life & work
+      { text: 'Clinic thoughts intruding', score: -2 },
+      { text: 'Worrying about patients', score: -2 },
+      { text: '"I\'m stuck in medicine forever"', score: -4 },
+      { text: 'Dreading Monday', score: -3 },
+      { text: 'Work guilt on days off', score: -2 },
+      { text: '"I\'m wasting my weekend"', score: -2 },
+      { text: '"I should be doing more"', score: -2 },
+      // Relationship
+      { text: '"They don\'t understand"', score: -3 },
+      { text: '"I\'m a burden"', score: -4 },
+      { text: '"Nobody cares"', score: -4 },
+      { text: 'Feeling misunderstood', score: -3 },
+    ],
+    center: [
+      // Observer state
+      { text: 'Thoughts come and go', score: 0 },
+      { text: 'Observing without stories', score: 0 },
+      { text: 'Watching the watcher', score: 0 },
+      { text: '"Who am I?" awareness', score: 0 },
+      { text: 'Just noticing', score: 0 },
+      // Acceptance
+      { text: 'Accepting self & others', score: 0 },
+      { text: '"It is what it is"', score: 0 },
+      { text: 'Letting thoughts pass', score: 0 },
+      { text: 'No stories needed right now', score: 0 },
+      { text: '"This is enough"', score: 0 },
+      // Present & creative
+      { text: 'Present, in the now', score: 0 },
+      { text: 'Imagining & creative', score: 0 },
+      { text: 'Daydreaming gently', score: 0 },
+      { text: 'Mind is quiet', score: 0 },
+      { text: 'Enjoying a book/film/music', score: 0 },
+      { text: 'Lost in a good conversation', score: 0 },
+      // Open & curious
+      { text: 'Testing ideas openly', score: 0 },
+      { text: 'Curious about what I notice', score: 0 },
+      { text: 'Thinking in probabilities', score: 0 },
+      { text: 'Curious about data', score: 0 },
+      { text: 'Learning something new', score: 0 },
+      // Trading-specific centre
+      { text: 'Puzzle-solver mode', score: 0 },
+      { text: '"I trade my hypothesis"', score: 0 },
+      { text: '"The edge plays out over many trades"', score: 0 },
+      { text: 'Reading the puzzle', score: 0 },
+      { text: 'Hypothesis feels neutral', score: 0 },
+      // General clarity
+      { text: 'Thoughts are slow & clear', score: 0 },
+      { text: 'Open to being wrong', score: 0 },
+      { text: 'Grateful for this moment', score: 0 },
+      { text: 'Looking forward to something', score: 0 },
+      { text: '"Today is a good day"', score: 0 },
+      { text: 'Planning calmly', score: 0 },
+    ],
+    center_label: 'The Observer',
+    high: [
+      // Racing & scattered
+      { text: 'Rapid scattered thoughts', score: 3 },
+      { text: 'Racing mind', score: 3 },
+      { text: 'Can\'t slow down', score: 3 },
+      { text: 'Jumping between ideas', score: 2 },
+      { text: 'Planning too many things', score: 2 },
+      { text: 'Mental to-do list spiralling', score: 2 },
+      { text: 'Can\'t switch off', score: 3 },
+      { text: 'Mind still going at bedtime', score: 3 },
+      // Future-oriented — general
+      { text: 'Living in the future', score: 3 },
+      { text: 'Repeated fantasies', score: 4 },
+      { text: '"When I finally..."', score: 3 },
+      { text: 'Fantasising about quitting medicine', score: 3 },
+      { text: '"Life will be good when..."', score: 3 },
+      { text: 'Obsessing over a purchase/plan', score: 2 },
+      // Future-oriented — trading
+      { text: 'Counting profits before entry', score: 4 },
+      { text: '"When I make £500 today..."', score: 4 },
+      // Demanding & entitled
+      { text: 'Demanding success now', score: 4 },
+      { text: '"I need this trade"', score: 5 },
+      { text: '"I\'m owed a win"', score: 5 },
+      { text: '"The market owes me"', score: 5 },
+      { text: '"I\'ll make it back"', score: 5 },
+      { text: '"I deserve better than this"', score: 3 },
+      // Aggression & dominance
+      { text: '"I\'ll show them"', score: 4 },
+      { text: 'Critical of others', score: 3 },
+      { text: '"Everyone else is wrong"', score: 4 },
+      { text: 'Arguing with the market', score: 4 },
+      { text: 'Blaming the broker/platform', score: 3 },
+      { text: 'Composing angry messages', score: 3 },
+      { text: 'Judging people around me', score: 2 },
+      { text: '"They\'re all idiots"', score: 3 },
+      // Overconfidence
+      { text: '"I know where this is going"', score: 4 },
+      { text: '"I can\'t lose today"', score: 5 },
+      { text: 'Ignoring contradicting data', score: 4 },
+      { text: 'Thinking I\'m special', score: 4 },
+      { text: '"I\'ve figured it all out"', score: 4 },
+      // Revenge & urgency — trading
+      { text: 'Revenge trading thoughts', score: 5 },
+      { text: '"Just one more trade"', score: 4 },
+      { text: '"I need to add size"', score: 5 },
+      { text: 'Can\'t stop looking at P&L', score: 3 },
+      // Control & urgency — general
+      { text: '"I need to fix this NOW"', score: 3 },
+      { text: 'Micromanaging in my head', score: 2 },
+      { text: 'Controlling how others act', score: 3 },
+      { text: '"Why won\'t they listen?"', score: 3 },
+      { text: 'Doom-scrolling news', score: 2 },
+      { text: 'Compulsive phone checking', score: 2 },
+    ]
+  }
+};
+
+const DIMENSION_META = {
+  sensations: { title: 'Sensations', subtitle: 'Take a trip from your nose to your toes. What is your body telling you right now? Just notice — don\'t try to change anything.', color: '#B87333', short: 'S' },
+  emotions: { title: 'Emotions', subtitle: 'What feelings are present? Not what you think you should feel — what IS here, right now. Welcome it with open arms.', color: '#8B9E6B', short: 'E' },
+  thoughts: { title: 'Thoughts', subtitle: 'What stories is your mind telling? Are there voices, rehearsals, fantasies running? Just notice them like clouds passing.', color: '#9E8B7E', short: 'T' }
+};
+
+const QUOTES = [
+  '"Just notice. No discipline, no force, no judgments." — Richard Friesen',
+  '"You are the observer who watches the ES. The P&L does not define you." — Your Protocol',
+  '"Who looks outside, dreams; who looks inside, awakes." — Carl Jung',
+  '"The carefree state is not the absence of caring. It is the presence of the one who watches." — Your Protocol',
+  '"Your visions will become clear only when you can look into your own heart." — Carl Jung',
+  '"Whatever you become aware of is OK. You are just gathering data." — Richard Friesen',
+  '"The shame of being wrong was installed before you ever placed a trade." — Your Protocol',
+  '"You are just a curious anthropologist on an adventure to your own body." — Richard Friesen',
+];
+
+// ===== STATE =====
+let entries = [];
+let settings = {
+  alarmEnabled: false, tradingInterval: 5, tradingStart: '14:30', tradingEnd: '21:00',
+  restAlarmEnabled: false, restInterval: 60,
+  weekendAlarmEnabled: false, weekendInterval: 120,
+  soundEnabled: true
+};
+let checkinState = { step: 0, selections: { sensations: [], emotions: [], thoughts: [] } };
+let alarmTimer = null;
+let currentSummaryData = null;
+
+// ===== INIT =====
+function init() {
+  loadData();
+  loadSettings();
+  updateGreeting();
+  updateHomeScreen();
+  updateAlarmDisplay();
+  startAlarmSystem();
+  setInterval(updateAlarmDisplay, 30000);
+  document.getElementById('daily-quote').textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+}
+
+function loadData() {
+  try { entries = JSON.parse(localStorage.getItem('set_entries') || '[]'); } catch(e) { entries = []; }
+}
+function saveData() { localStorage.setItem('set_entries', JSON.stringify(entries)); }
+function loadSettings() {
+  try {
+    const s = JSON.parse(localStorage.getItem('set_settings'));
+    if (s) settings = { ...settings, ...s };
+  } catch(e) {}
+  applySettingsToUI();
+}
+function saveSettings() {
+  settings.alarmEnabled = document.getElementById('alarm-enabled').checked;
+  settings.tradingInterval = parseInt(document.getElementById('trading-interval').value);
+  settings.tradingStart = document.getElementById('trading-start').value;
+  settings.tradingEnd = document.getElementById('trading-end').value;
+  settings.restAlarmEnabled = document.getElementById('rest-alarm-enabled').checked;
+  settings.restInterval = parseInt(document.getElementById('rest-interval').value);
+  settings.weekendAlarmEnabled = document.getElementById('weekend-alarm-enabled').checked;
+  settings.weekendInterval = parseInt(document.getElementById('weekend-interval').value);
+  settings.soundEnabled = document.getElementById('sound-enabled').checked;
+  localStorage.setItem('set_settings', JSON.stringify(settings));
+  updateAlarmDisplay();
+  startAlarmSystem();
+}
+function applySettingsToUI() {
+  document.getElementById('alarm-enabled').checked = settings.alarmEnabled;
+  document.getElementById('trading-interval').value = settings.tradingInterval;
+  document.getElementById('trading-start').value = settings.tradingStart;
+  document.getElementById('trading-end').value = settings.tradingEnd;
+  document.getElementById('rest-alarm-enabled').checked = settings.restAlarmEnabled;
+  document.getElementById('rest-interval').value = settings.restInterval;
+  document.getElementById('weekend-alarm-enabled').checked = settings.weekendAlarmEnabled;
+  document.getElementById('weekend-interval').value = settings.weekendInterval;
+  document.getElementById('sound-enabled').checked = settings.soundEnabled;
+  document.getElementById('total-checkins').textContent = entries.length;
+  if (Notification.permission === 'granted') {
+    document.getElementById('notif-hint').textContent = 'Enabled';
+    document.getElementById('notif-btn').textContent = 'Enabled';
+    document.getElementById('notif-btn').disabled = true;
+  }
+}
+
+// ===== NAVIGATION =====
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.nav-btn[data-screen="${name}"]`)?.classList.add('active');
+  if (name === 'history') renderHistory();
+  if (name === 'settings') applySettingsToUI();
+}
+
+// ===== GREETING =====
+function updateGreeting() {
+  const h = new Date().getHours();
+  const g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greeting').textContent = g + ', Siva';
+  const day = new Date().getDay();
+  const isWeekend = day === 0 || day === 6;
+  document.getElementById('home-subtitle').textContent = isWeekend
+    ? 'A quiet day to notice what\'s here.'
+    : 'How are you arriving today?';
+}
+
+// ===== HOME SCREEN UPDATE =====
+function updateHomeScreen() {
+  const today = new Date().toDateString();
+  const todayEntries = entries.filter(e => new Date(e.timestamp).toDateString() === today);
+  const list = document.getElementById('today-entries-list');
+
+  if (todayEntries.length === 0) {
+    list.innerHTML = '<p class="no-entries">Start your first check-in to see entries here</p>';
+    document.getElementById('score-ring-number').textContent = '—';
+    document.getElementById('score-ring-fill').style.strokeDashoffset = 377;
+    document.getElementById('last-checkin-label').textContent = 'No check-ins yet today';
+    return;
+  }
+
+  const last = todayEntries[todayEntries.length - 1];
+  const setScore = last.setScore;
+  const pct = Math.max(0, 1 - setScore / 5);
+  const offset = 377 * (1 - pct);
+  const ring = document.getElementById('score-ring-fill');
+  ring.style.strokeDashoffset = 377 - offset;
+  ring.style.stroke = setScore <= 1 ? '#8B9E6B' : setScore <= 2.5 ? '#B8A03E' : setScore <= 3.5 ? '#B87333' : '#A0522D';
+  document.getElementById('score-ring-number').textContent = setScore.toFixed(1);
+  const t = new Date(last.timestamp);
+  document.getElementById('last-checkin-label').textContent = 'Last check-in at ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  list.innerHTML = todayEntries.slice().reverse().map(e => {
+    const time = new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return `<div class="entry-mini" onclick="showEntryDetail('${e.id}')">
+      <span class="entry-time">${time}</span>
+      <div class="entry-dots">
+        <span class="entry-dot s">${(e.distances ? e.distances.sensations : Math.abs(e.scores.sensations)).toFixed(0)}</span>
+        <span class="entry-dot e">${(e.distances ? e.distances.emotions : Math.abs(e.scores.emotions)).toFixed(0)}</span>
+        <span class="entry-dot t">${(e.distances ? e.distances.thoughts : Math.abs(e.scores.thoughts)).toFixed(0)}</span>
+      </div>
+      <span class="entry-set">${e.setScore.toFixed(1)}</span>
+    </div>`;
+  }).join('');
+}
+
+// ===== CHECK-IN FLOW =====
+const STEPS = ['sensations', 'emotions', 'thoughts'];
+
+function startCheckin() {
+  checkinState = { step: 0, selections: { sensations: [], emotions: [], thoughts: [] } };
+  showScreen('checkin');
+  document.querySelector('.nav').style.display = 'none';
+  renderCheckinStep();
+}
+
+function cancelCheckin() {
+  document.querySelector('.nav').style.display = 'flex';
+  showScreen('home');
+}
+
+function renderCheckinStep() {
+  const dim = STEPS[checkinState.step];
+  const meta = DIMENSION_META[dim];
+  const desc = DESCRIPTORS[dim];
+
+  document.getElementById('checkin-step-label').textContent = `Step ${checkinState.step + 1} of 3`;
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById('prog-' + i);
+    dot.className = 'checkin-progress-dot';
+    if (i < checkinState.step + 1) dot.classList.add('done');
+    if (i === checkinState.step + 1) dot.classList.add('current');
+  }
+
+  document.getElementById('checkin-back').style.display = checkinState.step === 0 ? 'none' : '';
+  document.getElementById('checkin-next').textContent = checkinState.step === 2 ? 'See Results' : 'Next';
+
+  const selected = checkinState.selections[dim];
+
+  const lowLabel = dim === 'thoughts' ? 'Withdrawn Mind' : dim === 'emotions' ? 'Withdrawn' : 'Depleted';
+  const centerLabel = desc.center_label || (dim === 'emotions' ? 'Open & Centred' : dim === 'sensations' ? 'Peace & Power' : 'The Observer');
+  const highLabel = dim === 'thoughts' ? 'Overdriven Mind' : dim === 'emotions' ? 'Overdriven' : 'Activated';
+
+  const html = `
+    <h2 class="dimension-title" style="color:${meta.color}">${meta.title}</h2>
+    <p class="dimension-subtitle">${meta.subtitle}</p>
+    <p style="font-size:0.75rem;color:var(--dusk);margin-bottom:16px;padding:8px 12px;background:var(--sand);border-radius:8px;">Tap everything that fits — you can pick from multiple zones. Sleepy AND tense? Select both.</p>
+
+    <div class="zone zone-low ${selected.some(s => desc.low.find(d => d.text === s)) ? 'selected' : ''}">
+      <div class="zone-header">
+        <span class="zone-label">${lowLabel}</span>
+        <span class="zone-score-hint">low energy</span>
+      </div>
+      <div class="zone-chips">
+        ${desc.low.map(d => `<span class="chip ${selected.includes(d.text) ? 'selected' : ''}" onclick="toggleChip(this, '${dim}', '${d.text.replace(/'/g, "\\'")}')">${d.text}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="zone zone-center ${selected.some(s => desc.center.find(d => d.text === s)) ? 'selected' : ''}">
+      <div class="zone-header">
+        <span class="zone-label">${centerLabel}</span>
+        <span class="zone-score-hint">open &amp; flexible</span>
+      </div>
+      <div class="zone-chips">
+        ${desc.center.map(d => `<span class="chip ${selected.includes(d.text) ? 'selected' : ''}" onclick="toggleChip(this, '${dim}', '${d.text.replace(/'/g, "\\'")}')">${d.text}</span>`).join('')}
+      </div>
+    </div>
+
+    <div class="zone zone-high ${selected.some(s => desc.high.find(d => d.text === s)) ? 'selected' : ''}">
+      <div class="zone-header">
+        <span class="zone-label">${highLabel}</span>
+        <span class="zone-score-hint">high energy</span>
+      </div>
+      <div class="zone-chips">
+        ${desc.high.map(d => `<span class="chip ${selected.includes(d.text) ? 'selected' : ''}" onclick="toggleChip(this, '${dim}', '${d.text.replace(/'/g, "\\'")}')">${d.text}</span>`).join('')}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('checkin-content').innerHTML = html;
+  document.getElementById('checkin-content').scrollTop = 0;
+  window.scrollTo(0, 0);
+  updateNextButton();
+}
+
+function toggleChip(el, dim, text) {
+  const sel = checkinState.selections[dim];
+  const idx = sel.indexOf(text);
+  if (idx >= 0) { sel.splice(idx, 1); el.classList.remove('selected'); }
+  else { sel.push(text); el.classList.add('selected'); }
+
+  // Update zone highlight
+  const desc = DESCRIPTORS[dim];
+  document.querySelectorAll('.zone').forEach(z => z.classList.remove('selected'));
+  ['low', 'center', 'high'].forEach(zone => {
+    if (sel.some(s => desc[zone].find(d => d.text === s))) {
+      const zoneEl = document.querySelector('.zone-' + zone);
+      if (zoneEl) zoneEl.classList.add('selected');
+    }
+  });
+
+  updateNextButton();
+}
+
+function updateNextButton() {
+  const dim = STEPS[checkinState.step];
+  const hasSelection = checkinState.selections[dim].length > 0;
+  document.getElementById('checkin-next').disabled = !hasSelection;
+}
+
+function checkinBack() {
+  if (checkinState.step > 0) { checkinState.step--; renderCheckinStep(); }
+}
+
+function checkinNext() {
+  if (checkinState.step < 2) { checkinState.step++; renderCheckinStep(); }
+  else { showSummary(); }
+}
+
+// ===== CALCULATE SCORES =====
+function calcDimensionScore(dim) {
+  // Returns { signed, distance, mixed }
+  // signed = directional average (for display: which way you're leaning)
+  // distance = average absolute value per descriptor (true distance from centre)
+  // mixed = true if you selected from both low AND high zones
+  const sel = checkinState.selections[dim];
+  const desc = DESCRIPTORS[dim];
+  const all = [...desc.low, ...desc.center, ...desc.high];
+  let totalSigned = 0, totalAbs = 0, count = 0;
+  let hasLow = false, hasHigh = false;
+  sel.forEach(text => {
+    const found = all.find(d => d.text === text);
+    if (found) {
+      totalSigned += found.score;
+      totalAbs += Math.abs(found.score);
+      if (found.score < 0) hasLow = true;
+      if (found.score > 0) hasHigh = true;
+      count++;
+    }
+  });
+  return count > 0
+    ? { signed: totalSigned / count, distance: totalAbs / count, mixed: hasLow && hasHigh }
+    : { signed: 0, distance: 0, mixed: false };
+}
+
+function scoreLabel(result) {
+  const d = result.distance;
+  if (result.mixed) return 'Mixed — pulled both ways';
+  if (d <= 0.5) return 'Centred';
+  if (d <= 1.5) return 'Slightly off-centre';
+  if (d <= 2.5) return 'Moderately off-centre';
+  if (d <= 3.5) return 'Strongly off-centre';
+  return 'Extreme';
+}
+
+function compositeLabel(set) {
+  if (set <= 0.5) return 'Deeply centred — ideal trading state';
+  if (set <= 1) return 'Near centre — good awareness';
+  if (set <= 1.5) return 'Slight drift — stay curious';
+  if (set <= 2.5) return 'Moderate drift — check your hypothesis';
+  if (set <= 3.5) return 'Significant drift — consider minimum size';
+  return 'Far from centre — consider stepping away';
+}
+
+// ===== SUMMARY =====
+function showSummary() {
+  const sResult = calcDimensionScore('sensations');
+  const eResult = calcDimensionScore('emotions');
+  const tResult = calcDimensionScore('thoughts');
+  // SET composite uses distance (avg absolute per descriptor), NOT abs of signed average
+  const setScore = (sResult.distance + eResult.distance + tResult.distance) / 3;
+
+  currentSummaryData = {
+    scores: { sensations: sResult.signed, emotions: eResult.signed, thoughts: tResult.signed },
+    distances: { sensations: sResult.distance, emotions: eResult.distance, thoughts: tResult.distance },
+    mixed: { sensations: sResult.mixed, emotions: eResult.mixed, thoughts: tResult.mixed },
+    setScore: setScore,
+    selections: JSON.parse(JSON.stringify(checkinState.selections))
+  };
+
+  const results = { sensations: sResult, emotions: eResult, thoughts: tResult };
+
+  // Render summary card
+  document.getElementById('summary-card').innerHTML = `
+    <h3 class="summary-title">Your S.E.T. Reading</h3>
+    <div class="summary-dimensions">
+      ${['sensations', 'emotions', 'thoughts'].map(dim => {
+        const r = results[dim];
+        const meta = DIMENSION_META[dim];
+        return `<div class="summary-dim">
+          <div class="summary-dim-label">${meta.short}</div>
+          <div class="summary-dim-score" style="background:${meta.color}">${r.distance.toFixed(1)}</div>
+          <div class="summary-dim-word">${scoreLabel(r)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="summary-composite">
+      <div class="summary-composite-label">Distance from centre</div>
+      <div class="summary-composite-score">${setScore.toFixed(1)}</div>
+      <div class="summary-composite-desc">${compositeLabel(setScore)}</div>
+    </div>
+  `;
+
+  // Render selections
+  const selHtml = ['sensations', 'emotions', 'thoughts'].map(dim => {
+    const meta = DIMENSION_META[dim];
+    const chips = currentSummaryData.selections[dim].map(t =>
+      `<span class="summary-chip" style="background:${meta.color}">${t}</span>`
+    ).join('');
+    return chips ? `<div class="summary-sel-group">
+      <div class="summary-sel-label">${meta.title}</div>
+      <div class="summary-sel-chips">${chips}</div>
+    </div>` : '';
+  }).join('');
+
+  document.getElementById('summary-selections').innerHTML = `<h3>What you noticed</h3>${selHtml}`;
+  document.getElementById('summary-notes').value = '';
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-summary').classList.add('active');
+}
+
+function closeSummary() {
+  document.querySelector('.nav').style.display = 'flex';
+  showScreen('home');
+}
+
+function saveCheckin() {
+  const entry = {
+    id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+    timestamp: new Date().toISOString(),
+    scores: currentSummaryData.scores,
+    distances: currentSummaryData.distances,
+    mixed: currentSummaryData.mixed,
+    setScore: currentSummaryData.setScore,
+    selections: currentSummaryData.selections,
+    notes: document.getElementById('summary-notes').value.trim()
+  };
+  entries.push(entry);
+  saveData();
+  document.querySelector('.nav').style.display = 'flex';
+  showScreen('home');
+  updateHomeScreen();
+}
+
+// ===== HISTORY =====
+function renderHistory() {
+  const container = document.getElementById('history-list');
+  if (entries.length === 0) {
+    container.innerHTML = '<p class="no-entries" style="text-align:center;padding:40px 0">No entries yet. Start a check-in to build your history.</p>';
+    return;
+  }
+
+  const grouped = {};
+  entries.slice().reverse().forEach(e => {
+    const d = new Date(e.timestamp).toDateString();
+    if (!grouped[d]) grouped[d] = [];
+    grouped[d].push(e);
+  });
+
+  container.innerHTML = Object.entries(grouped).map(([date, items]) => {
+    const d = new Date(date);
+    const label = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+    const avg = (items.reduce((a, e) => a + e.setScore, 0) / items.length).toFixed(1);
+    return `<div class="date-group">
+      <div class="date-label">${label} · ${items.length} check-in${items.length > 1 ? 's' : ''} · avg ${avg}</div>
+      ${items.map(e => {
+        const time = new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const allChips = [...(e.selections.sensations || []), ...(e.selections.emotions || []), ...(e.selections.thoughts || [])];
+        const preview = allChips.slice(0, 4);
+        return `<div class="history-entry" onclick="showEntryDetail('${e.id}')">
+          <div class="history-entry-top">
+            <span class="history-entry-time">${time}</span>
+            <span class="history-entry-set">${e.setScore.toFixed(1)}</span>
+          </div>
+          <div class="history-entry-bars">
+            ${['sensations', 'emotions', 'thoughts'].map(dim => {
+              const v = e.distances ? e.distances[dim] : Math.abs(e.scores[dim]);
+              const pct = (v / 5) * 100;
+              return `<div class="history-bar-group">
+                <div class="history-bar-label">${DIMENSION_META[dim].short}</div>
+                <div class="history-bar"><div class="history-bar-fill ${DIMENSION_META[dim].short.toLowerCase()}" style="width:${pct}%"></div></div>
+              </div>`;
+            }).join('')}
+          </div>
+          ${preview.length ? `<div class="history-chips-preview">${preview.map(c => `<span class="history-chip-mini">${c}</span>`).join('')}${allChips.length > 4 ? `<span class="history-chip-mini">+${allChips.length - 4}</span>` : ''}</div>` : ''}
+        </div>`;
+      }).join('')}
+    </div>`;
+  }).join('');
+}
+
+function showEntryDetail(id) {
+  const e = entries.find(x => x.id === id);
+  if (!e) return;
+  const time = new Date(e.timestamp).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+
+  document.getElementById('detail-card').innerHTML = `
+    <button class="detail-close" onclick="document.getElementById('detail-overlay').classList.remove('active')">&times;</button>
+    <h3>${time}</h3>
+    <div style="text-align:center;margin:12px 0">
+      <div style="font-size:0.7rem;text-transform:uppercase;color:var(--dusk);letter-spacing:0.06em">SET Score</div>
+      <div style="font-family:Lora,serif;font-size:2rem;font-weight:600;color:var(--bark)">${e.setScore.toFixed(1)}</div>
+      <div style="font-size:0.8rem;color:var(--dusk)">${compositeLabel(e.setScore)}</div>
+    </div>
+    ${['sensations', 'emotions', 'thoughts'].map(dim => {
+      const meta = DIMENSION_META[dim];
+      const chips = (e.selections[dim] || []).map(t => `<span class="detail-chip" style="background:${meta.color}">${t}</span>`).join('');
+      return chips ? `<div class="detail-section">
+        <div class="detail-section-title">${meta.title} — distance: ${(e.distances ? e.distances[dim] : Math.abs(e.scores[dim])).toFixed(1)}${e.mixed && e.mixed[dim] ? ' (mixed)' : ''}</div>
+        <div class="detail-chips">${chips}</div>
+      </div>` : '';
+    }).join('')}
+    ${e.notes ? `<div class="detail-section"><div class="detail-section-title">Notes</div><div class="detail-notes">${e.notes}</div></div>` : ''}
+  `;
+  document.getElementById('detail-overlay').classList.add('active');
+}
+
+function closeDetail(event) {
+  if (event.target === document.getElementById('detail-overlay')) {
+    document.getElementById('detail-overlay').classList.remove('active');
+  }
+}
+
+// ===== ALARM SYSTEM =====
+function isWeekend() { const d = new Date().getDay(); return d === 0 || d === 6; }
+
+function isInTradingHours() {
+  if (isWeekend()) return false;
+  const now = new Date();
+  const [sh, sm] = settings.tradingStart.split(':').map(Number);
+  const [eh, em] = settings.tradingEnd.split(':').map(Number);
+  const mins = now.getHours() * 60 + now.getMinutes();
+  return mins >= sh * 60 + sm && mins <= eh * 60 + em;
+}
+
+function getActiveInterval() {
+  if (isWeekend()) return settings.weekendAlarmEnabled ? settings.weekendInterval : null;
+  if (isInTradingHours()) return settings.alarmEnabled ? settings.tradingInterval : null;
+  return settings.restAlarmEnabled ? settings.restInterval : null;
+}
+
+function startAlarmSystem() {
+  if (alarmTimer) clearInterval(alarmTimer);
+  alarmTimer = setInterval(() => {
+    const interval = getActiveInterval();
+    if (!interval) return;
+    const now = new Date();
+    const mins = now.getHours() * 60 + now.getMinutes();
+    if (mins % interval === 0 && now.getSeconds() < 31) {
+      triggerAlarm();
+    }
+  }, 30000);
+}
+
+function triggerAlarm() {
+  document.getElementById('alarm-overlay').classList.add('active');
+  if (settings.soundEnabled) playAlarmSound();
+  if (Notification.permission === 'granted') {
+    try { new Notification('S.E.T. Check-in', { body: 'Pause. Notice. No judgments.', icon: '🔔' }); } catch(e) {}
+  }
+}
+
+function playAlarmSound() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 528;
+    osc.type = 'sine';
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 1.5);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 1.5);
+  } catch(e) {}
+}
+
+function alarmCheckin() {
+  document.getElementById('alarm-overlay').classList.remove('active');
+  startCheckin();
+}
+
+function dismissAlarm() {
+  document.getElementById('alarm-overlay').classList.remove('active');
+}
+
+function updateAlarmDisplay() {
+  const interval = getActiveInterval();
+  const badge = document.getElementById('alarm-status-badge');
+  const text = document.getElementById('alarm-next-text');
+
+  if (!interval) {
+    badge.textContent = 'OFF'; badge.className = 'alarm-status off';
+    text.textContent = 'No active alarm right now';
+    return;
+  }
+
+  badge.textContent = 'ON'; badge.className = 'alarm-status on';
+  const label = isWeekend() ? 'Weekend' : isInTradingHours() ? 'Trading session' : 'Rest of day';
+  text.textContent = `${label} · every ${interval} min`;
+}
+
+// ===== NOTIFICATIONS =====
+function requestNotifPermission() {
+  if ('Notification' in window) {
+    Notification.requestPermission().then(p => {
+      if (p === 'granted') {
+        document.getElementById('notif-hint').textContent = 'Enabled';
+        document.getElementById('notif-btn').textContent = 'Enabled';
+      }
+    });
+  }
+}
+
+// ===== EXPORTS =====
+function showExportModal() { document.getElementById('export-modal').classList.add('active'); }
+function closeExportModal() { document.getElementById('export-modal').classList.remove('active'); }
+
+function exportCSV() {
+  closeExportModal();
+  let csv = 'Date,Time,S Score,E Score,T Score,SET Score,Sensations,Emotions,Thoughts,Notes\n';
+  entries.forEach(e => {
+    const d = new Date(e.timestamp);
+    csv += `${d.toLocaleDateString()},${d.toLocaleTimeString()},${e.scores.sensations.toFixed(1)},${e.scores.emotions.toFixed(1)},${e.scores.thoughts.toFixed(1)},${e.setScore.toFixed(1)},"${(e.selections.sensations||[]).join('; ')}","${(e.selections.emotions||[]).join('; ')}","${(e.selections.thoughts||[]).join('; ')}","${(e.notes||'').replace(/"/g, '""')}"\n`;
+  });
+  downloadFile('set-scores.csv', csv, 'text/csv');
+}
+
+function exportTherapist() {
+  closeExportModal();
+  const grouped = {};
+  entries.forEach(e => {
+    const d = new Date(e.timestamp).toDateString();
+    if (!grouped[d]) grouped[d] = [];
+    grouped[d].push(e);
+  });
+
+  let report = `S.E.T. AWARENESS REPORT\nGenerated: ${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}\nTotal check-ins: ${entries.length}\n`;
+  report += `${'='.repeat(50)}\n\n`;
+
+  if (entries.length > 0) {
+    const avgSet = entries.reduce((a, e) => a + e.setScore, 0) / entries.length;
+    report += `OVERALL AVERAGE SET SCORE: ${avgSet.toFixed(1)} (distance from centre)\n`;
+    report += `Interpretation: ${compositeLabel(avgSet)}\n\n`;
+
+    // Frequency analysis of selected descriptors
+    const freq = {};
+    entries.forEach(e => {
+      ['sensations', 'emotions', 'thoughts'].forEach(dim => {
+        (e.selections[dim] || []).forEach(t => {
+          freq[t] = (freq[t] || 0) + 1;
+        });
+      });
+    });
+    const sorted = Object.entries(freq).sort((a, b) => b[1] - a[1]);
+    if (sorted.length > 0) {
+      report += `MOST FREQUENT EXPERIENCES:\n`;
+      sorted.slice(0, 10).forEach(([text, count]) => {
+        report += `  · ${text} (${count} times, ${Math.round(count/entries.length*100)}% of check-ins)\n`;
+      });
+      report += '\n';
+    }
+  }
+
+  Object.entries(grouped).forEach(([date, items]) => {
+    const d = new Date(date);
+    report += `${d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' })}\n${'-'.repeat(40)}\n`;
+    items.forEach(e => {
+      const time = new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      report += `  ${time}  SET: ${e.setScore.toFixed(1)}  (S: ${e.scores.sensations.toFixed(1)} | E: ${e.scores.emotions.toFixed(1)} | T: ${e.scores.thoughts.toFixed(1)})\n`;
+      ['sensations', 'emotions', 'thoughts'].forEach(dim => {
+        const sel = e.selections[dim] || [];
+        if (sel.length) report += `    ${DIMENSION_META[dim].title}: ${sel.join(', ')}\n`;
+      });
+      if (e.notes) report += `    Notes: ${e.notes}\n`;
+      report += '\n';
+    });
+  });
+
+  report += `\n${'='.repeat(50)}\nS.E.T. Framework: Sensations, Emotions, Thoughts\nScale: -5 (withdrawn/depleted) to 0 (centred/open) to +5 (overdriven/activated)\nSET Score = average absolute distance from 0 across all three dimensions\nLower SET score = closer to the ideal centred state\nBased on Richard Friesen's Mind Muscles for Traders methodology\n`;
+
+  downloadFile('set-report.txt', report, 'text/plain');
+}
+
+function exportJSON() {
+  closeExportModal();
+  downloadFile('set-backup.json', JSON.stringify({ entries, settings, exportDate: new Date().toISOString() }, null, 2), 'application/json');
+}
+
+function downloadFile(name, content, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+// ===== DATA MANAGEMENT =====
+function clearAllData() {
+  if (confirm('This will permanently delete all your S.E.T. entries. Are you sure?')) {
+    entries = [];
+    saveData();
+    updateHomeScreen();
+    applySettingsToUI();
+    alert('All data cleared.');
+  }
+}
+
+// ===== PWA SERVICE WORKER =====
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+// ===== INIT =====
+init();
+</script>
+</body>
+</html>

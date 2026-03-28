@@ -1,0 +1,18 @@
+{
+  "name": "S.E.T. Tracker",
+  "short_name": "S.E.T.",
+  "description": "Sensations, Emotions, Thoughts — awareness tracker",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#FAF6F1",
+  "theme_color": "#A0522D",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
