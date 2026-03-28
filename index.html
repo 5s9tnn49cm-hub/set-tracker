@@ -375,6 +375,43 @@ select.setting-select:focus { outline: none; border-color: var(--sienna); }
 }
 .time-input:focus { outline: none; border-color: var(--sienna); }
 
+/* Time list for specific alarm times */
+.time-list-container { padding: 8px 0 4px; }
+.time-list-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 8px;
+}
+.add-time-btn {
+  background: var(--sage-light); color: var(--moss); border: none;
+  padding: 5px 14px; border-radius: 20px; font-family: 'Inter', sans-serif;
+  font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: background 0.2s;
+}
+.add-time-btn:active { background: var(--sage); color: white; }
+.time-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.time-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--cream); border: 1.5px solid var(--clay);
+  border-radius: 20px; padding: 5px 6px 5px 12px;
+  font-family: 'Inter', sans-serif; font-size: 0.85rem; color: var(--earth);
+}
+.time-pill input[type="time"] {
+  border: none; background: transparent; font-family: 'Inter', sans-serif;
+  font-size: 0.85rem; color: var(--earth); width: 90px; padding: 0;
+}
+.time-pill input[type="time"]:focus { outline: none; }
+.time-pill .remove-time {
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--sand); border: none; color: var(--dusk);
+  font-size: 14px; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.time-pill .remove-time:active { background: #C0392B; color: white; }
+.time-list-empty {
+  font-size: 0.8rem; color: var(--dusk); font-style: italic;
+  padding: 4px 0;
+}
+
 .danger-btn {
   width: 100%; padding: 12px; margin-top: 8px;
   background: none; border: 1.5px solid #C0392B; border-radius: var(--radius);
@@ -582,64 +619,49 @@ select.setting-select:focus { outline: none; border-color: var(--sienna); }
     <h2 class="settings-title">Settings</h2>
 
     <div class="setting-group">
-      <h3>Trading Session Alarm</h3>
+      <h3>Trading Session</h3>
       <div class="setting-row">
         <div>
-          <div class="setting-label">Enable alarm</div>
+          <div class="setting-label">Enable</div>
+          <div class="setting-hint">Weekday trading hours</div>
         </div>
         <label class="toggle">
           <input type="checkbox" id="alarm-enabled" onchange="saveSettings()">
           <span class="toggle-slider"></span>
         </label>
       </div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Interval</div>
-          <div class="setting-hint">During trading hours</div>
+      <div class="time-list-container">
+        <div class="time-list-header">
+          <span class="setting-label">Check-in times</span>
+          <button class="add-time-btn" onclick="addTimeSlot('trading')">+ Add</button>
         </div>
-        <select class="setting-select" id="trading-interval" onchange="saveSettings()">
-          <option value="5">Every 5 min</option>
-          <option value="10">Every 10 min</option>
-          <option value="15">Every 15 min</option>
-          <option value="30">Every 30 min</option>
-        </select>
-      </div>
-      <div class="setting-row">
-        <div><div class="setting-label">Trading start</div></div>
-        <input type="time" class="time-input" id="trading-start" value="14:30" onchange="saveSettings()">
-      </div>
-      <div class="setting-row">
-        <div><div class="setting-label">Trading end</div></div>
-        <input type="time" class="time-input" id="trading-end" value="21:00" onchange="saveSettings()">
+        <div class="time-list" id="trading-times"></div>
       </div>
     </div>
 
     <div class="setting-group">
-      <h3>Rest-of-Day Alarm</h3>
+      <h3>Workday (non-trading)</h3>
       <div class="setting-row">
         <div>
           <div class="setting-label">Enable</div>
-          <div class="setting-hint">Outside trading hours</div>
+          <div class="setting-hint">Weekdays outside trading</div>
         </div>
         <label class="toggle">
           <input type="checkbox" id="rest-alarm-enabled" onchange="saveSettings()">
           <span class="toggle-slider"></span>
         </label>
       </div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Interval</div>
+      <div class="time-list-container">
+        <div class="time-list-header">
+          <span class="setting-label">Check-in times</span>
+          <button class="add-time-btn" onclick="addTimeSlot('workday')">+ Add</button>
         </div>
-        <select class="setting-select" id="rest-interval" onchange="saveSettings()">
-          <option value="30">Every 30 min</option>
-          <option value="60" selected>Every 1 hour</option>
-          <option value="120">Every 2 hours</option>
-        </select>
+        <div class="time-list" id="workday-times"></div>
       </div>
     </div>
 
     <div class="setting-group">
-      <h3>Weekend Alarm</h3>
+      <h3>Weekend</h3>
       <div class="setting-row">
         <div>
           <div class="setting-label">Enable</div>
@@ -649,15 +671,12 @@ select.setting-select:focus { outline: none; border-color: var(--sienna); }
           <span class="toggle-slider"></span>
         </label>
       </div>
-      <div class="setting-row">
-        <div>
-          <div class="setting-label">Interval</div>
+      <div class="time-list-container">
+        <div class="time-list-header">
+          <span class="setting-label">Check-in times</span>
+          <button class="add-time-btn" onclick="addTimeSlot('weekend')">+ Add</button>
         </div>
-        <select class="setting-select" id="weekend-interval" onchange="saveSettings()">
-          <option value="60">Every 1 hour</option>
-          <option value="120" selected>Every 2 hours</option>
-          <option value="180">Every 3 hours</option>
-        </select>
+        <div class="time-list" id="weekend-times"></div>
       </div>
     </div>
 
@@ -1250,9 +1269,12 @@ const QUOTES = [
 // ===== STATE =====
 let entries = [];
 let settings = {
-  alarmEnabled: false, tradingInterval: 5, tradingStart: '14:30', tradingEnd: '21:00',
-  restAlarmEnabled: false, restInterval: 60,
-  weekendAlarmEnabled: false, weekendInterval: 120,
+  alarmEnabled: false,
+  tradingTimes: ['14:30','15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30','19:00','19:30','20:00','20:30','21:00'],
+  restAlarmEnabled: false,
+  workdayTimes: ['08:00','10:00','12:00','13:30','22:00'],
+  weekendAlarmEnabled: false,
+  weekendTimes: ['09:00','12:00','15:00','18:00','21:00'],
   soundEnabled: true
 };
 let checkinState = { step: 0, selections: { sensations: [], emotions: [], thoughts: [] } };
@@ -1284,34 +1306,85 @@ function loadSettings() {
 }
 function saveSettings() {
   settings.alarmEnabled = document.getElementById('alarm-enabled').checked;
-  settings.tradingInterval = parseInt(document.getElementById('trading-interval').value);
-  settings.tradingStart = document.getElementById('trading-start').value;
-  settings.tradingEnd = document.getElementById('trading-end').value;
   settings.restAlarmEnabled = document.getElementById('rest-alarm-enabled').checked;
-  settings.restInterval = parseInt(document.getElementById('rest-interval').value);
   settings.weekendAlarmEnabled = document.getElementById('weekend-alarm-enabled').checked;
-  settings.weekendInterval = parseInt(document.getElementById('weekend-interval').value);
   settings.soundEnabled = document.getElementById('sound-enabled').checked;
+  // Times are saved directly via addTimeSlot/removeTimeSlot/updateTimeSlot
+  localStorage.setItem('set_settings', JSON.stringify(settings));
+  updateAlarmDisplay();
+  startAlarmSystem();
+}
+function persistSettings() {
   localStorage.setItem('set_settings', JSON.stringify(settings));
   updateAlarmDisplay();
   startAlarmSystem();
 }
 function applySettingsToUI() {
   document.getElementById('alarm-enabled').checked = settings.alarmEnabled;
-  document.getElementById('trading-interval').value = settings.tradingInterval;
-  document.getElementById('trading-start').value = settings.tradingStart;
-  document.getElementById('trading-end').value = settings.tradingEnd;
   document.getElementById('rest-alarm-enabled').checked = settings.restAlarmEnabled;
-  document.getElementById('rest-interval').value = settings.restInterval;
   document.getElementById('weekend-alarm-enabled').checked = settings.weekendAlarmEnabled;
-  document.getElementById('weekend-interval').value = settings.weekendInterval;
   document.getElementById('sound-enabled').checked = settings.soundEnabled;
   document.getElementById('total-checkins').textContent = entries.length;
+  renderTimeList('trading');
+  renderTimeList('workday');
+  renderTimeList('weekend');
   if (Notification.permission === 'granted') {
     document.getElementById('notif-hint').textContent = 'Enabled';
     document.getElementById('notif-btn').textContent = 'Enabled';
     document.getElementById('notif-btn').disabled = true;
   }
+}
+
+// ===== TIME LIST MANAGEMENT =====
+function getTimesKey(schedule) {
+  return schedule === 'trading' ? 'tradingTimes' : schedule === 'workday' ? 'workdayTimes' : 'weekendTimes';
+}
+function renderTimeList(schedule) {
+  const key = getTimesKey(schedule);
+  const container = document.getElementById(schedule + '-times');
+  const times = settings[key] || [];
+  if (times.length === 0) {
+    container.innerHTML = '<div class="time-list-empty">No times set — tap + Add</div>';
+    return;
+  }
+  // Sort times for display
+  const sorted = times.slice().sort();
+  container.innerHTML = sorted.map((t, i) => {
+    const origIndex = times.indexOf(t);
+    return `<div class="time-pill">
+      <input type="time" value="${t}" onchange="updateTimeSlot('${schedule}',${origIndex},this.value)">
+      <button class="remove-time" onclick="removeTimeSlot('${schedule}',${origIndex})">×</button>
+    </div>`;
+  }).join('');
+}
+function addTimeSlot(schedule) {
+  const key = getTimesKey(schedule);
+  // Default new time based on schedule
+  let defaultTime = '12:00';
+  const existing = settings[key] || [];
+  if (existing.length > 0) {
+    // Suggest 30 min after the last sorted time
+    const last = existing.slice().sort().pop();
+    const [h, m] = last.split(':').map(Number);
+    const nm = m + 30;
+    const nh = h + Math.floor(nm / 60);
+    defaultTime = String(nh % 24).padStart(2,'0') + ':' + String(nm % 60).padStart(2,'0');
+  }
+  settings[key].push(defaultTime);
+  persistSettings();
+  renderTimeList(schedule);
+}
+function removeTimeSlot(schedule, index) {
+  const key = getTimesKey(schedule);
+  settings[key].splice(index, 1);
+  persistSettings();
+  renderTimeList(schedule);
+}
+function updateTimeSlot(schedule, index, value) {
+  const key = getTimesKey(schedule);
+  settings[key][index] = value;
+  persistSettings();
+  renderTimeList(schedule);
 }
 
 // ===== NAVIGATION =====
@@ -1696,32 +1769,49 @@ function closeDetail(event) {
 // ===== ALARM SYSTEM =====
 function isWeekend() { const d = new Date().getDay(); return d === 0 || d === 6; }
 
-function isInTradingHours() {
-  if (isWeekend()) return false;
-  const now = new Date();
-  const [sh, sm] = settings.tradingStart.split(':').map(Number);
-  const [eh, em] = settings.tradingEnd.split(':').map(Number);
-  const mins = now.getHours() * 60 + now.getMinutes();
-  return mins >= sh * 60 + sm && mins <= eh * 60 + em;
+function getActiveSchedule() {
+  // Returns { enabled, times, label } for the current schedule
+  if (isWeekend()) {
+    return { enabled: settings.weekendAlarmEnabled, times: settings.weekendTimes || [], label: 'Weekend' };
+  }
+  // Weekday: check if any trading time is within ±15 min to decide label
+  return null; // handled by combined check below
 }
 
-function getActiveInterval() {
-  if (isWeekend()) return settings.weekendAlarmEnabled ? settings.weekendInterval : null;
-  if (isInTradingHours()) return settings.alarmEnabled ? settings.tradingInterval : null;
-  return settings.restAlarmEnabled ? settings.restInterval : null;
+function getAllActiveTimes() {
+  // Returns array of { time: 'HH:MM', label } for all enabled schedules that apply right now
+  const times = [];
+  if (isWeekend()) {
+    if (settings.weekendAlarmEnabled && settings.weekendTimes) {
+      settings.weekendTimes.forEach(t => times.push({ time: t, label: 'Weekend' }));
+    }
+  } else {
+    if (settings.alarmEnabled && settings.tradingTimes) {
+      settings.tradingTimes.forEach(t => times.push({ time: t, label: 'Trading' }));
+    }
+    if (settings.restAlarmEnabled && settings.workdayTimes) {
+      settings.workdayTimes.forEach(t => times.push({ time: t, label: 'Workday' }));
+    }
+  }
+  return times;
 }
 
 function startAlarmSystem() {
   if (alarmTimer) clearInterval(alarmTimer);
+  let lastFiredMinute = -1;
   alarmTimer = setInterval(() => {
-    const interval = getActiveInterval();
-    if (!interval) return;
     const now = new Date();
-    const mins = now.getHours() * 60 + now.getMinutes();
-    if (mins % interval === 0 && now.getSeconds() < 31) {
+    const currentHHMM = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+    const currentMinute = now.getHours() * 60 + now.getMinutes();
+    // Don't fire twice in the same minute
+    if (currentMinute === lastFiredMinute) return;
+    const activeTimes = getAllActiveTimes();
+    const match = activeTimes.find(t => t.time === currentHHMM);
+    if (match) {
+      lastFiredMinute = currentMinute;
       triggerAlarm();
     }
-  }, 30000);
+  }, 15000); // check every 15 seconds
 }
 
 function triggerAlarm() {
@@ -1757,19 +1847,26 @@ function dismissAlarm() {
 }
 
 function updateAlarmDisplay() {
-  const interval = getActiveInterval();
+  const activeTimes = getAllActiveTimes();
   const badge = document.getElementById('alarm-status-badge');
   const text = document.getElementById('alarm-next-text');
 
-  if (!interval) {
+  if (activeTimes.length === 0) {
     badge.textContent = 'OFF'; badge.className = 'alarm-status off';
     text.textContent = 'No active alarm right now';
     return;
   }
 
   badge.textContent = 'ON'; badge.className = 'alarm-status on';
-  const label = isWeekend() ? 'Weekend' : isInTradingHours() ? 'Trading session' : 'Rest of day';
-  text.textContent = `${label} · every ${interval} min`;
+  // Find the next upcoming time
+  const now = new Date();
+  const currentMins = now.getHours() * 60 + now.getMinutes();
+  const sorted = activeTimes
+    .map(t => { const [h, m] = t.time.split(':').map(Number); return { ...t, mins: h * 60 + m }; })
+    .sort((a, b) => a.mins - b.mins);
+  const next = sorted.find(t => t.mins > currentMins) || sorted[0];
+  const nextLabel = next ? `Next: ${next.time} (${next.label})` : '';
+  text.textContent = `${activeTimes.length} check-ins today · ${nextLabel}`;
 }
 
 // ===== NOTIFICATIONS =====
