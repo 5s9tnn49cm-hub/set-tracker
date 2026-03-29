@@ -1297,6 +1297,8 @@ function init() {
   startAlarmSystem();
   setInterval(updateAlarmDisplay, 30000);
   document.getElementById('daily-quote').textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+  // Retry any failed syncs from previous sessions
+  setTimeout(retrySyncAll, 3000);
 }
 
 function loadData() {
@@ -1688,9 +1690,54 @@ function saveCheckin() {
   };
   entries.push(entry);
   saveData();
+  syncToSheet(entry);
   document.querySelector('.nav').style.display = 'flex';
   showScreen('home');
   updateHomeScreen();
+}
+
+// ===== GOOGLE SHEETS SYNC =====
+const SYNC_URL = 'https://script.google.com/a/macros/drsivacoaching.com/s/AKfycbyPKyaKGx374bzyA6YjJ7BOPOsWsIa_mF4eNq3FgNRBlX_TOGARE6NVECDqbzXsWkKJLA/exec';
+
+function syncToSheet(entry) {
+  // Fire and forget — don't block the UI
+  fetch(SYNC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(entry),
+    mode: 'no-cors'
+  }).then(() => {
+    markSynced(entry.id);
+  }).catch(() => {
+    markUnsynced(entry.id);
+  });
+}
+
+function markSynced(id) {
+  const pending = JSON.parse(localStorage.getItem('set_pending_sync') || '[]');
+  const updated = pending.filter(pid => pid !== id);
+  localStorage.setItem('set_pending_sync', JSON.stringify(updated));
+}
+
+function markUnsynced(id) {
+  const pending = JSON.parse(localStorage.getItem('set_pending_sync') || '[]');
+  if (!pending.includes(id)) pending.push(id);
+  localStorage.setItem('set_pending_sync', JSON.stringify(pending));
+}
+
+function retrySyncAll() {
+  const pending = JSON.parse(localStorage.getItem('set_pending_sync') || '[]');
+  if (pending.length === 0) return;
+  const toSync = entries.filter(e => pending.includes(e.id));
+  if (toSync.length === 0) return;
+  fetch(SYNC_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain' },
+    body: JSON.stringify(toSync),
+    mode: 'no-cors'
+  }).then(() => {
+    localStorage.setItem('set_pending_sync', JSON.stringify([]));
+  }).catch(() => {});
 }
 
 // ===== HISTORY =====
