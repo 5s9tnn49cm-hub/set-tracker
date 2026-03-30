@@ -202,7 +202,8 @@ h1, h2, h3 { font-family: 'Lora', Georgia, serif; font-weight: 500; }
 .chip-group-label {
   width: 100%; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
   letter-spacing: 0.06em; color: var(--dusk); opacity: 0.7;
-  margin-top: 6px; margin-bottom: -2px; padding-left: 2px;
+  margin-top: 6px; margin-bottom: 2px; padding-left: 2px;
+  pointer-events: none;
 }
 .chip-group-label:first-child { margin-top: 0; }
 
@@ -215,6 +216,7 @@ h1, h2, h3 { font-family: 'Lora', Georgia, serif; font-weight: 500; }
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
   min-height: 42px; display: flex; align-items: center;
+  position: relative; z-index: 1; pointer-events: auto;
 }
 .zone-low .chip { background: rgba(255,255,255,0.5); color: var(--bark); }
 .zone-low .chip.selected { background: var(--sienna); color: white; border-color: var(--sienna); }
@@ -1319,28 +1321,10 @@ function init() {
   // Retry any failed syncs from previous sessions
   setTimeout(retrySyncAll, 3000);
 
-  // Event delegation for chip taps — touchend + click for maximum iOS reliability
-  const checkinContent = document.getElementById('checkin-content');
-  let touchMoved = false;
-  let lastTouchTime = 0;
-  checkinContent.addEventListener('touchstart', function() { touchMoved = false; }, { passive: true });
-  checkinContent.addEventListener('touchmove', function() { touchMoved = true; }, { passive: true });
-  checkinContent.addEventListener('touchend', function(e) {
-    if (touchMoved) return; // was a scroll, not a tap
+  // Event delegation for chip taps
+  document.getElementById('checkin-content').addEventListener('click', function(e) {
     const chip = e.target.closest('.chip[data-dim]');
     if (!chip) return;
-    e.preventDefault();
-    lastTouchTime = Date.now();
-    const dim = chip.getAttribute('data-dim');
-    const text = chip.getAttribute('data-text');
-    toggleChip(chip, dim, text);
-  });
-  // Fallback click for non-touch devices; skip if touchend already fired
-  checkinContent.addEventListener('click', function(e) {
-    if (Date.now() - lastTouchTime < 500) return; // touchend already handled it
-    const chip = e.target.closest('.chip[data-dim]');
-    if (!chip) return;
-    e.preventDefault();
     const dim = chip.getAttribute('data-dim');
     const text = chip.getAttribute('data-text');
     toggleChip(chip, dim, text);
