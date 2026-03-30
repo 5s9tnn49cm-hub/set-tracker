@@ -1309,6 +1309,16 @@ function init() {
   document.getElementById('daily-quote').textContent = QUOTES[Math.floor(Math.random() * QUOTES.length)];
   // Retry any failed syncs from previous sessions
   setTimeout(retrySyncAll, 3000);
+
+  // Event delegation for chip taps — much more reliable on iOS than inline onclick
+  document.getElementById('checkin-content').addEventListener('click', function(e) {
+    const chip = e.target.closest('.chip[data-dim]');
+    if (!chip) return;
+    e.preventDefault();
+    const dim = chip.getAttribute('data-dim');
+    const text = chip.getAttribute('data-text');
+    toggleChip(chip, dim, text);
+  });
 }
 
 function loadData() {
@@ -1482,9 +1492,9 @@ function cancelCheckin() {
 }
 
 function renderChipsWithGroups(items, dim, selected) {
-  return items.map(d => {
+  return items.map((d, i) => {
     if (d.group) return `<div class="chip-group-label">${d.group}</div>`;
-    return `<span class="chip ${selected.includes(d.text) ? 'selected' : ''}" onclick="toggleChip(this, '${dim}', '${d.text.replace(/'/g, "\\'")}')">${d.text}</span>`;
+    return `<span class="chip ${selected.includes(d.text) ? 'selected' : ''}" data-dim="${dim}" data-text="${d.text.replace(/"/g, '&quot;')}" role="button" tabindex="0">${d.text}</span>`;
   }).join('');
 }
 
