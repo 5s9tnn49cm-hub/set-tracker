@@ -101,6 +101,10 @@ h1, h2, h3 { font-family: 'Lora', Georgia, serif; font-weight: 500; }
 .score-ring-number { font-family: 'Lora', serif; font-size: 2rem; font-weight: 600; color: var(--bark); }
 .score-ring-text { font-size: 0.7rem; color: var(--dusk); text-transform: uppercase; letter-spacing: 0.05em; }
 .last-checkin-label { font-size: 0.8rem; color: var(--dusk); }
+.home-dimension-scores { display: flex; gap: 20px; margin: 8px 0 4px; }
+.home-dim { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.home-dim-label { font-size: 0.65rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--dusk); }
+.home-dim-value { font-family: 'Lora', serif; font-size: 1.1rem; font-weight: 600; color: var(--bark); }
 
 .checkin-btn {
   display: flex; align-items: center; justify-content: center; gap: 10px;
@@ -176,7 +180,7 @@ h1, h2, h3 { font-family: 'Lora', Georgia, serif; font-weight: 500; }
 
 .zone {
   margin-bottom: 16px; border-radius: var(--radius);
-  overflow: hidden; border: 2px solid transparent;
+  overflow: visible; border: 2px solid transparent;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .zone.selected { box-shadow: 0 2px 12px var(--shadow-md); }
@@ -553,8 +557,13 @@ select.setting-select:focus { outline: none; border-color: var(--sienna); }
         </svg>
         <div class="score-ring-label">
           <div class="score-ring-number" id="score-ring-number">—</div>
-          <div class="score-ring-text">SET score</div>
+          <div class="score-ring-text">distance from centre</div>
         </div>
+      </div>
+      <div class="home-dimension-scores" id="home-dimension-scores" style="display:none;">
+        <div class="home-dim"><span class="home-dim-label">S</span><span class="home-dim-value" id="home-s-score">0</span></div>
+        <div class="home-dim"><span class="home-dim-label">E</span><span class="home-dim-value" id="home-e-score">0</span></div>
+        <div class="home-dim"><span class="home-dim-label">T</span><span class="home-dim-value" id="home-t-score">0</span></div>
       </div>
       <p class="last-checkin-label" id="last-checkin-label">No check-ins yet today</p>
     </div>
@@ -1310,8 +1319,25 @@ function init() {
   // Retry any failed syncs from previous sessions
   setTimeout(retrySyncAll, 3000);
 
-  // Event delegation for chip taps — much more reliable on iOS than inline onclick
-  document.getElementById('checkin-content').addEventListener('click', function(e) {
+  // Event delegation for chip taps — touchend + click for maximum iOS reliability
+  const checkinContent = document.getElementById('checkin-content');
+  let touchMoved = false;
+  let lastTouchTime = 0;
+  checkinContent.addEventListener('touchstart', function() { touchMoved = false; }, { passive: true });
+  checkinContent.addEventListener('touchmove', function() { touchMoved = true; }, { passive: true });
+  checkinContent.addEventListener('touchend', function(e) {
+    if (touchMoved) return; // was a scroll, not a tap
+    const chip = e.target.closest('.chip[data-dim]');
+    if (!chip) return;
+    e.preventDefault();
+    lastTouchTime = Date.now();
+    const dim = chip.getAttribute('data-dim');
+    const text = chip.getAttribute('data-text');
+    toggleChip(chip, dim, text);
+  });
+  // Fallback click for non-touch devices; skip if touchend already fired
+  checkinContent.addEventListener('click', function(e) {
+    if (Date.now() - lastTouchTime < 500) return; // touchend already handled it
     const chip = e.target.closest('.chip[data-dim]');
     if (!chip) return;
     e.preventDefault();
@@ -1448,6 +1474,7 @@ function updateHomeScreen() {
     document.getElementById('score-ring-number').textContent = '—';
     document.getElementById('score-ring-fill').style.strokeDashoffset = 377;
     document.getElementById('last-checkin-label').textContent = 'No check-ins yet today';
+    document.getElementById('home-dimension-scores').style.display = 'none';
     return;
   }
 
@@ -1459,6 +1486,13 @@ function updateHomeScreen() {
   ring.style.strokeDashoffset = 377 - offset;
   ring.style.stroke = setScore <= 1 ? '#8B9E6B' : setScore <= 2.5 ? '#B8A03E' : setScore <= 3.5 ? '#B87333' : '#A0522D';
   document.getElementById('score-ring-number').textContent = setScore.toFixed(1);
+  // Show signed individual scores below the ring
+  const dimScores = document.getElementById('home-dimension-scores');
+  dimScores.style.display = 'flex';
+  function fmtSign(v) { return v > 0.05 ? '+' + v.toFixed(1) : v < -0.05 ? v.toFixed(1) : '0'; }
+  document.getElementById('home-s-score').textContent = fmtSign(last.scores.sensations);
+  document.getElementById('home-e-score').textContent = fmtSign(last.scores.emotions);
+  document.getElementById('home-t-score').textContent = fmtSign(last.scores.thoughts);
   const t = new Date(last.timestamp);
   document.getElementById('last-checkin-label').textContent = 'Last check-in at ' + t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
