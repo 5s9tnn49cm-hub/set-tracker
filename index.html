@@ -1331,14 +1331,19 @@ function init() {
   // Retry any failed syncs from previous sessions
   setTimeout(retrySyncAll, 3000);
 
-  // handleChipTap — called directly from each chip's onclick (no delegation)
-  window.handleChipTap = function(el, dim, text) {
-    toggleChip(el, dim, text);
-  };
 }
 
 function loadData() {
   try { entries = JSON.parse(localStorage.getItem('set_entries') || '[]'); } catch(e) { entries = []; }
+  // Migrate: recalculate setScore from signed dimension scores (fixes old distance-based values)
+  var migrated = false;
+  entries.forEach(function(e) {
+    if (e.scores) {
+      var recalc = (e.scores.sensations + e.scores.emotions + e.scores.thoughts) / 3;
+      if (Math.abs(e.setScore - recalc) > 0.01) { e.setScore = recalc; migrated = true; }
+    }
+  });
+  if (migrated) saveData();
 }
 function saveData() { localStorage.setItem('set_entries', JSON.stringify(entries)); }
 function loadSettings() {
@@ -1520,8 +1525,7 @@ function cancelCheckin() {
 function renderChipsWithGroups(items, dim, selected) {
   return items.map((d, i) => {
     if (d.group) return `<div class="chip-group-label">${d.group}</div>`;
-    const escaped = d.text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
-    return `<button type="button" class="chip ${selected.includes(d.text) ? 'selected' : ''}" data-dim="${dim}" data-text="${d.text.replace(/"/g, '&quot;')}" onclick="handleChipTap(this,'${dim}','${escaped}')">${d.text}</button>`;
+    return `<button type="button" class="chip ${selected.includes(d.text) ? 'selected' : ''}" data-dim="${dim}" data-text="${d.text.replace(/"/g, '&quot;')}">${d.text}</button>`;
   }).join('');
 }
 
@@ -1588,6 +1592,22 @@ function renderCheckinStep() {
   `;
 
   document.getElementById('checkin-content').innerHTML = html;
+
+  // Attach tap listeners directly to each chip (most reliable on iOS Safari)
+  document.querySelectorAll('#checkin-content .chip').forEach(function(btn) {
+    var chipDim = btn.getAttribute('data-dim');
+    var chipText = btn.getAttribute('data-text');
+    var tapped = false;
+    btn.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      if (!tapped) { tapped = true; toggleChip(btn, chipDim, chipText); setTimeout(function(){ tapped = false; }, 300); }
+    }, {passive: false});
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      if (!tapped) { toggleChip(btn, chipDim, chipText); }
+    });
+  });
+
   document.getElementById('checkin-content').scrollTop = 0;
   window.scrollTo(0, 0);
   updateNextButton();
