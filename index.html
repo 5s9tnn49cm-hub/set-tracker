@@ -1331,14 +1331,10 @@ function init() {
   // Retry any failed syncs from previous sessions
   setTimeout(retrySyncAll, 3000);
 
-  // Event delegation for chip taps
-  document.getElementById('checkin-content').addEventListener('click', function(e) {
-    const chip = e.target.closest('.chip[data-dim]');
-    if (!chip) return;
-    const dim = chip.getAttribute('data-dim');
-    const text = chip.getAttribute('data-text');
-    toggleChip(chip, dim, text);
-  });
+  // handleChipTap — called directly from each chip's onclick (no delegation)
+  window.handleChipTap = function(el, dim, text) {
+    toggleChip(el, dim, text);
+  };
 }
 
 function loadData() {
@@ -1522,7 +1518,8 @@ function cancelCheckin() {
 function renderChipsWithGroups(items, dim, selected) {
   return items.map((d, i) => {
     if (d.group) return `<div class="chip-group-label">${d.group}</div>`;
-    return `<button type="button" class="chip ${selected.includes(d.text) ? 'selected' : ''}" data-dim="${dim}" data-text="${d.text.replace(/"/g, '&quot;')}">${d.text}</button>`;
+    const escaped = d.text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    return `<button type="button" class="chip ${selected.includes(d.text) ? 'selected' : ''}" data-dim="${dim}" data-text="${d.text.replace(/"/g, '&quot;')}" onclick="handleChipTap(this,'${dim}','${escaped}')">${d.text}</button>`;
   }).join('');
 }
 
