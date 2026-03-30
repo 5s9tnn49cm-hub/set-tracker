@@ -569,7 +569,7 @@ select.setting-select:focus { outline: none; border-color: var(--sienna); }
         </svg>
         <div class="score-ring-label">
           <div class="score-ring-number" id="score-ring-number">—</div>
-          <div class="score-ring-text">distance from centre</div>
+          <div class="score-ring-text">S.E.T. score</div>
         </div>
       </div>
       <div class="home-dimension-scores" id="home-dimension-scores" style="display:none;">
@@ -1470,12 +1470,14 @@ function updateHomeScreen() {
 
   const last = todayEntries[todayEntries.length - 1];
   const setScore = last.setScore;
-  const pct = Math.max(0, 1 - setScore / 5);
+  const pct = Math.max(0, 1 - Math.abs(setScore) / 5);
   const offset = 377 * (1 - pct);
   const ring = document.getElementById('score-ring-fill');
   ring.style.strokeDashoffset = 377 - offset;
-  ring.style.stroke = setScore <= 1 ? '#8B9E6B' : setScore <= 2.5 ? '#B8A03E' : setScore <= 3.5 ? '#B87333' : '#A0522D';
-  document.getElementById('score-ring-number').textContent = setScore.toFixed(1);
+  const absSet = Math.abs(setScore);
+  ring.style.stroke = absSet <= 1 ? '#8B9E6B' : absSet <= 2.5 ? '#B8A03E' : absSet <= 3.5 ? '#B87333' : '#A0522D';
+  function fmtSignComposite(v) { return v > 0.05 ? '+' + v.toFixed(1) : v < -0.05 ? v.toFixed(1) : '0.0'; }
+  document.getElementById('score-ring-number').textContent = fmtSignComposite(setScore);
   // Show signed individual scores below the ring
   const dimScores = document.getElementById('home-dimension-scores');
   dimScores.style.display = 'flex';
@@ -1495,7 +1497,7 @@ function updateHomeScreen() {
         <span class="entry-dot e" title="Emotions">${e.scores.emotions >= 0 ? (e.scores.emotions > 0 ? '+' : '') : ''}${e.scores.emotions.toFixed(0)}</span>
         <span class="entry-dot t" title="Thoughts">${e.scores.thoughts >= 0 ? (e.scores.thoughts > 0 ? '+' : '') : ''}${e.scores.thoughts.toFixed(0)}</span>
       </div>
-      <span class="entry-set">${e.setScore.toFixed(1)}</span>
+      <span class="entry-set">${e.setScore > 0.05 ? '+' : ''}${e.setScore.toFixed(1)}</span>
     </div>`;
   }).join('');
 }
@@ -1662,11 +1664,12 @@ function scoreLabel(result) {
 }
 
 function compositeLabel(set) {
-  if (set <= 0.5) return 'Deeply centred — ideal trading state';
-  if (set <= 1) return 'Near centre — good awareness';
-  if (set <= 1.5) return 'Slight drift — stay curious';
-  if (set <= 2.5) return 'Moderate drift — check your hypothesis';
-  if (set <= 3.5) return 'Significant drift — consider minimum size';
+  const abs = Math.abs(set);
+  if (abs <= 0.5) return 'Deeply centred — ideal trading state';
+  if (abs <= 1) return 'Near centre — good awareness';
+  if (abs <= 1.5) return 'Slight drift — stay curious';
+  if (abs <= 2.5) return 'Moderate drift — check your hypothesis';
+  if (abs <= 3.5) return 'Significant drift — consider minimum size';
   return 'Far from centre — consider stepping away';
 }
 
@@ -1675,8 +1678,8 @@ function showSummary() {
   const sResult = calcDimensionScore('sensations');
   const eResult = calcDimensionScore('emotions');
   const tResult = calcDimensionScore('thoughts');
-  // SET composite uses distance (avg absolute per descriptor), NOT abs of signed average
-  const setScore = (sResult.distance + eResult.distance + tResult.distance) / 3;
+  // SET composite = average of signed scores (shows direction, not just distance)
+  const setScore = (sResult.signed + eResult.signed + tResult.signed) / 3;
 
   currentSummaryData = {
     scores: { sensations: sResult.signed, emotions: eResult.signed, thoughts: tResult.signed },
@@ -1707,8 +1710,8 @@ function showSummary() {
       }).join('')}
     </div>
     <div class="summary-composite">
-      <div class="summary-composite-label">Distance from centre</div>
-      <div class="summary-composite-score">${setScore.toFixed(1)}</div>
+      <div class="summary-composite-label">S.E.T. Score</div>
+      <div class="summary-composite-score">${setScore > 0.05 ? '+' : ''}${setScore.toFixed(1)}</div>
       <div class="summary-composite-desc">${compositeLabel(setScore)}</div>
     </div>
   `;
@@ -1828,7 +1831,7 @@ function renderHistory() {
         return `<div class="history-entry" onclick="showEntryDetail('${e.id}')">
           <div class="history-entry-top">
             <span class="history-entry-time">${time}</span>
-            <span class="history-entry-set">${e.setScore.toFixed(1)}</span>
+            <span class="history-entry-set">${e.setScore > 0.05 ? '+' : ''}${e.setScore.toFixed(1)}</span>
           </div>
           <div class="history-entry-bars">
             ${['sensations', 'emotions', 'thoughts'].map(dim => {
@@ -1857,7 +1860,7 @@ function showEntryDetail(id) {
     <h3>${time}</h3>
     <div style="text-align:center;margin:12px 0">
       <div style="font-size:0.7rem;text-transform:uppercase;color:var(--dusk);letter-spacing:0.06em">SET Score</div>
-      <div style="font-family:Lora,serif;font-size:2rem;font-weight:600;color:var(--bark)">${e.setScore.toFixed(1)}</div>
+      <div style="font-family:Lora,serif;font-size:2rem;font-weight:600;color:var(--bark)">${e.setScore > 0.05 ? '+' : ''}${e.setScore.toFixed(1)}</div>
       <div style="font-size:0.8rem;color:var(--dusk)">${compositeLabel(e.setScore)}</div>
     </div>
     ${['sensations', 'emotions', 'thoughts'].map(dim => {
