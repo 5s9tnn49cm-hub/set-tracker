@@ -195,12 +195,22 @@ h1, h2, h3 { font-family: 'Lora', Georgia, serif; font-weight: 500; }
 .zone-score-hint { font-size: 0.7rem; color: var(--dusk); opacity: 0.7; }
 .zone-chips { padding: 4px 12px 14px; display: flex; flex-wrap: wrap; gap: 8px; }
 
+.chip-group-label {
+  width: 100%; font-size: 0.7rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--dusk); opacity: 0.7;
+  margin-top: 6px; margin-bottom: -2px; padding-left: 2px;
+}
+.chip-group-label:first-child { margin-top: 0; }
+
 .chip {
-  padding: 7px 14px; border-radius: 20px;
-  font-size: 0.8rem; font-weight: 400;
+  padding: 10px 16px; border-radius: 20px;
+  font-size: 0.85rem; font-weight: 400;
   cursor: pointer; transition: all 0.15s;
   border: 1.5px solid transparent;
   user-select: none; -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  min-height: 42px; display: flex; align-items: center;
 }
 .zone-low .chip { background: rgba(255,255,255,0.5); color: var(--bark); }
 .zone-low .chip.selected { background: var(--sienna); color: white; border-color: var(--sienna); }
@@ -779,7 +789,7 @@ select.setting-select:focus { outline: none; border-color: var(--sienna); }
 const DESCRIPTORS = {
   sensations: {
     low: [
-      // Energy & fatigue
+      { group: 'Energy & fatigue' },
       { text: 'Exhausted', score: -5 },
       { text: 'Sleepy', score: -3 },
       { text: 'Drowsy', score: -2 },
@@ -791,37 +801,37 @@ const DESCRIPTORS = {
       { text: 'Post-clinic crash', score: -3 },
       { text: 'Sleep-deprived', score: -4 },
       { text: 'Hungover feeling', score: -3 },
-      // Digestion & appetite
+      { group: 'Digestion & appetite' },
       { text: 'Stomach upset', score: -3 },
       { text: 'Nauseous', score: -4 },
       { text: 'No appetite', score: -3 },
       { text: 'Bloated', score: -2 },
       { text: 'Skipped meals', score: -2 },
       { text: 'Comfort-eating aftermath', score: -2 },
-      // Musculoskeletal
+      { group: 'Muscles & body' },
       { text: 'Sore muscles', score: -2 },
       { text: 'Body aches', score: -3 },
       { text: 'Stiff neck', score: -2 },
       { text: 'Lower back pain', score: -2 },
       { text: 'Aching from sitting all day', score: -2 },
       { text: 'Physically weak', score: -3 },
-      // Breathing & heart
+      { group: 'Breathing & heart' },
       { text: 'Shallow breathing', score: -2 },
       { text: 'Sighing a lot', score: -2 },
       { text: 'Uneven heartbeat', score: -3 },
       { text: 'Yawning constantly', score: -2 },
-      // Posture & presence
+      { group: 'Posture & presence' },
       { text: 'Slumping posture', score: -2 },
       { text: 'Can\'t focus eyes', score: -3 },
       { text: 'Eyes glazed over', score: -3 },
       { text: 'Staring into space', score: -3 },
-      // Hydration & illness
+      { group: 'Hydration & illness' },
       { text: 'Dehydrated', score: -2 },
       { text: 'Feeling unwell', score: -4 },
       { text: 'Headache', score: -3 },
       { text: 'Cold hands/feet', score: -2 },
       { text: 'Run down', score: -3 },
-      // Emotional-somatic
+      { group: 'Emotional-somatic' },
       { text: 'Chest feels heavy', score: -3 },
       { text: 'Lump in throat', score: -3 },
       { text: 'Numb / disconnected', score: -4 },
@@ -830,19 +840,19 @@ const DESCRIPTORS = {
       { text: 'Body feels fragile', score: -3 },
     ],
     center: [
-      // Energy
+      { group: 'Energy' },
       { text: 'Well rested', score: 0 },
       { text: 'Energy reserves', score: 0 },
       { text: 'Alert but calm', score: 0 },
       { text: 'Pleasantly warm', score: 0 },
       { text: 'Fresh after sleep', score: 0 },
       { text: 'Naturally awake', score: 0 },
-      // Digestion
+      { group: 'Digestion' },
       { text: 'Relaxed stomach', score: 0 },
       { text: 'Enjoying food slowly', score: 0 },
       { text: 'Satisfied after eating', score: 0 },
       { text: 'Eating mindfully', score: 0 },
-      // Muscles & body
+      { group: 'Muscles & body' },
       { text: 'Body feels exercised', score: 0 },
       { text: 'Muscles loose', score: 0 },
       { text: 'Good health', score: 0 },
@@ -851,18 +861,18 @@ const DESCRIPTORS = {
       { text: 'Physically comfortable', score: 0 },
       { text: 'Post-walk glow', score: 0 },
       { text: 'Body feels strong', score: 0 },
-      // Breathing & heart
+      { group: 'Breathing & heart' },
       { text: 'Deep slow breathing', score: 0 },
       { text: 'Steady heartbeat', score: 0 },
       { text: 'Breathing into belly', score: 0 },
-      // Posture & presence
+      { group: 'Posture & presence' },
       { text: 'Upright & grounded', score: 0 },
       { text: 'Wide relaxed gaze', score: 0 },
       { text: 'Feet feel the floor', score: 0 },
       { text: 'Hands still & open', score: 0 },
-      // Hydration
+      { group: 'Hydration' },
       { text: 'Hydrated', score: 0 },
-      // Emotional-somatic
+      { group: 'Emotional-somatic' },
       { text: 'Lightness in body', score: 0 },
       { text: 'Settled & still', score: 0 },
       { text: 'Body feels safe', score: 0 },
@@ -870,7 +880,7 @@ const DESCRIPTORS = {
       { text: 'Sensory pleasure (sun, breeze, etc.)', score: 0 },
     ],
     high: [
-      // Energy & activation
+      { group: 'Energy & activation' },
       { text: 'Hyper energetic', score: 4 },
       { text: 'Wired', score: 4 },
       { text: 'Can\'t sit still', score: 3 },
@@ -880,37 +890,37 @@ const DESCRIPTORS = {
       { text: 'Too much caffeine', score: 2 },
       { text: 'Wired but tired', score: 3 },
       { text: 'Second wind (artificial)', score: 2 },
-      // Digestion & appetite
+      { group: 'Digestion & appetite' },
       { text: 'Butterflies', score: 2 },
       { text: 'Eating rapidly', score: 2 },
       { text: 'Stress eating', score: 3 },
       { text: 'Stomach churning', score: 3 },
       { text: 'No hunger awareness', score: 2 },
       { text: 'Sugar/caffeine craving', score: 2 },
-      // Muscles & body
+      { group: 'Muscles & body' },
       { text: 'Muscle tension', score: 3 },
       { text: 'Jaw clenching', score: 3 },
       { text: 'Shoulders up by ears', score: 3 },
       { text: 'Fists clenching', score: 3 },
       { text: 'Grinding teeth', score: 3 },
       { text: 'Tension headache building', score: 3 },
-      // Breathing & heart
+      { group: 'Breathing & heart' },
       { text: 'Rapid breathing', score: 3 },
       { text: 'Holding breath', score: 3 },
       { text: 'Racing heart', score: 4 },
       { text: 'Heart pounding', score: 4 },
       { text: 'Chest tightness', score: 3 },
-      // Posture & presence
+      { group: 'Posture & presence' },
       { text: 'Tunnel vision', score: 3 },
       { text: 'Leaning into screen', score: 2 },
       { text: 'Eyes darting', score: 3 },
       { text: 'Glued to phone', score: 2 },
-      // Hydration & physical
+      { group: 'Skin & temperature' },
       { text: 'Dry mouth', score: 2 },
       { text: 'Sweating', score: 3 },
       { text: 'Flushed face', score: 3 },
       { text: 'Hot under the collar', score: 2 },
-      // Movement
+      { group: 'Movement' },
       { text: 'Leg bouncing', score: 2 },
       { text: 'Restless', score: 3 },
       { text: 'Pacing', score: 3 },
@@ -921,13 +931,13 @@ const DESCRIPTORS = {
   },
   emotions: {
     low: [
-      // Shutdown & freeze
+      { group: 'Shutdown & freeze' },
       { text: 'Frozen', score: -5 },
       { text: 'Numb', score: -4 },
       { text: 'Shut down', score: -5 },
       { text: 'Dissociated', score: -5 },
       { text: 'Going through the motions', score: -3 },
-      // Sadness & grief
+      { group: 'Sadness & grief' },
       { text: 'Sad', score: -3 },
       { text: 'Grief', score: -4 },
       { text: 'Lonely', score: -3 },
@@ -935,14 +945,14 @@ const DESCRIPTORS = {
       { text: 'Tearful', score: -3 },
       { text: 'Missing someone', score: -2 },
       { text: 'Nostalgic / wistful', score: -2 },
-      // Depression & despair
+      { group: 'Depression & despair' },
       { text: 'Depressed', score: -5 },
       { text: 'Hopeless', score: -5 },
       { text: 'Despairing', score: -5 },
       { text: 'Empty', score: -4 },
       { text: 'Flat', score: -3 },
       { text: 'Can\'t feel anything', score: -4 },
-      // Self-directed
+      { group: 'Self-directed' },
       { text: 'Self-critical', score: -3 },
       { text: 'Ashamed', score: -4 },
       { text: 'Guilty', score: -3 },
@@ -951,14 +961,14 @@ const DESCRIPTORS = {
       { text: 'Embarrassed', score: -2 },
       { text: 'Self-conscious', score: -2 },
       { text: 'Disappointed in myself', score: -3 },
-      // Avoidance & withdrawal
+      { group: 'Avoidance & withdrawal' },
       { text: 'Avoiding', score: -3 },
       { text: 'Withdrawn', score: -4 },
       { text: 'Hiding', score: -3 },
       { text: 'Want to disappear', score: -4 },
       { text: 'Dreading social contact', score: -3 },
       { text: 'Want to cancel plans', score: -2 },
-      // Cognitive-emotional
+      { group: 'Cognitive-emotional' },
       { text: 'Confused', score: -2 },
       { text: 'Disengaged', score: -3 },
       { text: 'Disorganised', score: -2 },
@@ -967,14 +977,14 @@ const DESCRIPTORS = {
       { text: 'Procrastinating', score: -2 },
       { text: 'Bored', score: -2 },
       { text: 'Unmotivated', score: -3 },
-      // Fear (low-energy)
+      { group: 'Fear & defeat' },
       { text: 'Dread', score: -4 },
       { text: 'Defeated', score: -4 },
       { text: 'Resigned', score: -3 },
       { text: 'Trapped', score: -4 },
       { text: 'Helpless', score: -4 },
       { text: 'Stuck', score: -3 },
-      // Longing & resentment
+      { group: 'Longing & resentment' },
       { text: 'Envious', score: -2 },
       { text: 'Resentful', score: -3 },
       { text: 'Bitter', score: -3 },
@@ -983,13 +993,13 @@ const DESCRIPTORS = {
       { text: 'Taken for granted', score: -3 },
     ],
     center: [
-      // Flow & engagement
+      { group: 'Flow & engagement' },
       { text: 'Flexible, in flow', score: 0 },
       { text: 'Engaged but not attached', score: 0 },
       { text: 'Absorbed in process', score: 0 },
       { text: 'Playful', score: 0 },
       { text: 'Enjoying the moment', score: 0 },
-      // Acceptance & peace
+      { group: 'Acceptance & peace' },
       { text: 'Accepting', score: 0 },
       { text: 'At peace', score: 0 },
       { text: 'Content', score: 0 },
@@ -997,19 +1007,19 @@ const DESCRIPTORS = {
       { text: 'Forgiving', score: 0 },
       { text: 'Serene', score: 0 },
       { text: 'Unbothered', score: 0 },
-      // Curiosity & openness
+      { group: 'Curiosity & openness' },
       { text: 'Curious & ready', score: 0 },
       { text: 'Open-minded', score: 0 },
       { text: 'Interested', score: 0 },
       { text: 'Wondering', score: 0 },
-      // Confidence & clarity
+      { group: 'Confidence & clarity' },
       { text: 'Clear-headed', score: 0 },
       { text: 'Quietly confident', score: 0 },
       { text: 'Decisive', score: 0 },
       { text: 'Patient', score: 0 },
       { text: 'Self-assured', score: 0 },
       { text: 'Trusting the process', score: 0 },
-      // Connection & relationships
+      { group: 'Connection & relationships' },
       { text: 'Compassionate', score: 0 },
       { text: 'Generous', score: 0 },
       { text: 'Connected', score: 0 },
@@ -1018,7 +1028,7 @@ const DESCRIPTORS = {
       { text: 'Feeling close to family', score: 0 },
       { text: 'Enjoying company', score: 0 },
       { text: 'Comfortable alone', score: 0 },
-      // Positive energy
+      { group: 'Positive energy' },
       { text: 'Enthusiastic', score: 0 },
       { text: 'Joyful', score: 0 },
       { text: 'Hopeful', score: 0 },
@@ -1026,13 +1036,13 @@ const DESCRIPTORS = {
       { text: 'Energised but steady', score: 0 },
       { text: 'Relaxed', score: 0 },
       { text: 'Amused', score: 0 },
-      // Safe & grounded
+      { group: 'Safe & grounded' },
       { text: 'Safe enough to be wrong', score: 0 },
       { text: 'Trusting my edge', score: 0 },
       { text: 'Feeling at home', score: 0 },
     ],
     high: [
-      // Anger spectrum
+      { group: 'Anger' },
       { text: 'Irritable', score: 2 },
       { text: 'Frustrated', score: 2 },
       { text: 'Angry', score: 4 },
@@ -1042,7 +1052,7 @@ const DESCRIPTORS = {
       { text: 'Resentful heat', score: 3 },
       { text: 'Annoyed at family/partner', score: 2 },
       { text: 'Road rage energy', score: 3 },
-      // Anxiety & fear (high-energy)
+      { group: 'Anxiety & fear' },
       { text: 'Anxious', score: 3 },
       { text: 'Worried', score: 2 },
       { text: 'Panicky', score: 4 },
@@ -1053,28 +1063,28 @@ const DESCRIPTORS = {
       { text: 'Health anxiety', score: 3 },
       { text: 'Money anxiety', score: 3 },
       { text: 'Dreading tomorrow', score: 3 },
-      // Impulsivity & urgency
+      { group: 'Impulsivity & urgency' },
       { text: 'Impulsive', score: 2 },
       { text: 'Urgent', score: 3 },
       { text: 'Impatient', score: 2 },
       { text: 'Reckless', score: 4 },
       { text: 'Urge to spend/buy', score: 3 },
       { text: 'Craving distraction', score: 2 },
-      // Obsession & intensity
+      { group: 'Obsession & intensity' },
       { text: 'Obsessed', score: 4 },
       { text: 'Intense', score: 3 },
       { text: 'Detail-obsessed', score: 3 },
       { text: 'Fixated', score: 4 },
       { text: 'Unrelenting', score: 4 },
       { text: 'Perfectionistic', score: 3 },
-      // Mania & chaos
+      { group: 'Mania & chaos' },
       { text: 'Manic', score: 5 },
       { text: 'Chaotic', score: 4 },
       { text: 'Overwhelmed', score: 3 },
       { text: 'Scattered', score: 3 },
       { text: 'Overstimulated', score: 3 },
       { text: 'Too many tabs open (mentally)', score: 2 },
-      // Dominance & control
+      { group: 'Dominance & control' },
       { text: 'Demanding', score: 3 },
       { text: 'Aggressive', score: 4 },
       { text: 'Certain I\'m right', score: 3 },
@@ -1083,7 +1093,7 @@ const DESCRIPTORS = {
       { text: 'Cocky', score: 4 },
       { text: 'Invincible', score: 5 },
       { text: 'Controlling', score: 3 },
-      // Jealousy & competition
+      { group: 'Jealousy & competition' },
       { text: 'Jealous', score: 3 },
       { text: 'Competitive', score: 2 },
       { text: 'Need to prove myself', score: 3 },
@@ -1092,7 +1102,7 @@ const DESCRIPTORS = {
   },
   thoughts: {
     low: [
-      // Self-attack
+      { group: 'Self-attack' },
       { text: 'Self-critical voice', score: -3 },
       { text: '"I\'m not smart enough"', score: -4 },
       { text: '"I always mess this up"', score: -4 },
@@ -1100,13 +1110,13 @@ const DESCRIPTORS = {
       { text: '"I don\'t deserve this"', score: -4 },
       { text: '"What\'s wrong with me?"', score: -3 },
       { text: '"I\'m letting people down"', score: -3 },
-      // Hopelessness
+      { group: 'Hopelessness' },
       { text: '"What\'s the point?"', score: -5 },
       { text: '"I can\'t do this"', score: -4 },
       { text: '"Nothing will change"', score: -5 },
       { text: '"I should just quit"', score: -5 },
       { text: '"This will never work"', score: -4 },
-      // Negative loops
+      { group: 'Negative loops' },
       { text: 'Negative loops', score: -4 },
       { text: 'Replaying failures', score: -4 },
       { text: 'Ruminating', score: -3 },
@@ -1114,7 +1124,7 @@ const DESCRIPTORS = {
       { text: 'Replaying conversations', score: -2 },
       { text: '"I should have said..."', score: -2 },
       { text: 'Replaying the GMC hearing', score: -4 },
-      // Fear & catastrophising
+      { group: 'Fear & catastrophising' },
       { text: 'Fearing the future', score: -3 },
       { text: 'Catastrophising', score: -4 },
       { text: '"What if it all goes wrong?"', score: -3 },
@@ -1122,7 +1132,7 @@ const DESCRIPTORS = {
       { text: 'Worrying about money', score: -3 },
       { text: 'Worrying about health', score: -3 },
       { text: '"What if they find out?"', score: -4 },
-      // Withdrawal
+      { group: 'Withdrawal' },
       { text: 'Mind going blank', score: -3 },
       { text: 'Can\'t think clearly', score: -3 },
       { text: 'Foggy thinking', score: -2 },
@@ -1130,13 +1140,13 @@ const DESCRIPTORS = {
       { text: 'Dark stories', score: -5 },
       { text: 'Zoning out', score: -2 },
       { text: 'Mindless scrolling', score: -2 },
-      // Comparison
+      { group: 'Comparison' },
       { text: 'Comparing to others', score: -3 },
       { text: '"Everyone else can do this"', score: -3 },
       { text: '"I started too late"', score: -3 },
       { text: '"They have it easier"', score: -3 },
       { text: 'Social media comparison', score: -2 },
-      // Life & work
+      { group: 'Life & work' },
       { text: 'Clinic thoughts intruding', score: -2 },
       { text: 'Worrying about patients', score: -2 },
       { text: '"I\'m stuck in medicine forever"', score: -4 },
@@ -1144,45 +1154,45 @@ const DESCRIPTORS = {
       { text: 'Work guilt on days off', score: -2 },
       { text: '"I\'m wasting my weekend"', score: -2 },
       { text: '"I should be doing more"', score: -2 },
-      // Relationship
+      { group: 'Relationship' },
       { text: '"They don\'t understand"', score: -3 },
       { text: '"I\'m a burden"', score: -4 },
       { text: '"Nobody cares"', score: -4 },
       { text: 'Feeling misunderstood', score: -3 },
     ],
     center: [
-      // Observer state
+      { group: 'Observer state' },
       { text: 'Thoughts come and go', score: 0 },
       { text: 'Observing without stories', score: 0 },
       { text: 'Watching the watcher', score: 0 },
       { text: '"Who am I?" awareness', score: 0 },
       { text: 'Just noticing', score: 0 },
-      // Acceptance
+      { group: 'Acceptance' },
       { text: 'Accepting self & others', score: 0 },
       { text: '"It is what it is"', score: 0 },
       { text: 'Letting thoughts pass', score: 0 },
       { text: 'No stories needed right now', score: 0 },
       { text: '"This is enough"', score: 0 },
-      // Present & creative
+      { group: 'Present & creative' },
       { text: 'Present, in the now', score: 0 },
       { text: 'Imagining & creative', score: 0 },
       { text: 'Daydreaming gently', score: 0 },
       { text: 'Mind is quiet', score: 0 },
       { text: 'Enjoying a book/film/music', score: 0 },
       { text: 'Lost in a good conversation', score: 0 },
-      // Open & curious
+      { group: 'Open & curious' },
       { text: 'Testing ideas openly', score: 0 },
       { text: 'Curious about what I notice', score: 0 },
       { text: 'Thinking in probabilities', score: 0 },
       { text: 'Curious about data', score: 0 },
       { text: 'Learning something new', score: 0 },
-      // Trading-specific centre
+      { group: 'Trading centre' },
       { text: 'Puzzle-solver mode', score: 0 },
       { text: '"I trade my hypothesis"', score: 0 },
       { text: '"The edge plays out over many trades"', score: 0 },
       { text: 'Reading the puzzle', score: 0 },
       { text: 'Hypothesis feels neutral', score: 0 },
-      // General clarity
+      { group: 'General clarity' },
       { text: 'Thoughts are slow & clear', score: 0 },
       { text: 'Open to being wrong', score: 0 },
       { text: 'Grateful for this moment', score: 0 },
@@ -1192,7 +1202,7 @@ const DESCRIPTORS = {
     ],
     center_label: 'The Observer',
     high: [
-      // Racing & scattered
+      { group: 'Racing & scattered' },
       { text: 'Rapid scattered thoughts', score: 3 },
       { text: 'Racing mind', score: 3 },
       { text: 'Can\'t slow down', score: 3 },
@@ -1201,24 +1211,24 @@ const DESCRIPTORS = {
       { text: 'Mental to-do list spiralling', score: 2 },
       { text: 'Can\'t switch off', score: 3 },
       { text: 'Mind still going at bedtime', score: 3 },
-      // Future-oriented — general
+      { group: 'Future fantasies' },
       { text: 'Living in the future', score: 3 },
       { text: 'Repeated fantasies', score: 4 },
       { text: '"When I finally..."', score: 3 },
       { text: 'Fantasising about quitting medicine', score: 3 },
       { text: '"Life will be good when..."', score: 3 },
       { text: 'Obsessing over a purchase/plan', score: 2 },
-      // Future-oriented — trading
+      { group: 'Trading fantasies' },
       { text: 'Counting profits before entry', score: 4 },
       { text: '"When I make £500 today..."', score: 4 },
-      // Demanding & entitled
+      { group: 'Demanding & entitled' },
       { text: 'Demanding success now', score: 4 },
       { text: '"I need this trade"', score: 5 },
       { text: '"I\'m owed a win"', score: 5 },
       { text: '"The market owes me"', score: 5 },
       { text: '"I\'ll make it back"', score: 5 },
       { text: '"I deserve better than this"', score: 3 },
-      // Aggression & dominance
+      { group: 'Aggression & dominance' },
       { text: '"I\'ll show them"', score: 4 },
       { text: 'Critical of others', score: 3 },
       { text: '"Everyone else is wrong"', score: 4 },
@@ -1227,24 +1237,24 @@ const DESCRIPTORS = {
       { text: 'Composing angry messages', score: 3 },
       { text: 'Judging people around me', score: 2 },
       { text: '"They\'re all idiots"', score: 3 },
-      // Overconfidence
+      { group: 'Overconfidence' },
       { text: '"I know where this is going"', score: 4 },
       { text: '"I can\'t lose today"', score: 5 },
       { text: 'Ignoring contradicting data', score: 4 },
       { text: 'Thinking I\'m special', score: 4 },
       { text: '"I\'ve figured it all out"', score: 4 },
-      // Revenge & urgency — trading
+      { group: 'Revenge trading' },
       { text: 'Revenge trading thoughts', score: 5 },
       { text: '"Just one more trade"', score: 4 },
       { text: '"I need to add size"', score: 5 },
       { text: 'Can\'t stop looking at P&L', score: 3 },
-      // Reliving & looping
+      { group: 'Reliving & looping' },
       { text: 'Reliving past conversations', score: 3 },
       { text: 'Replaying past experiences', score: 3 },
       { text: '"I should have done it differently"', score: 3 },
       { text: 'Stuck on something someone said', score: 2 },
       { text: 'Re-running a scene over and over', score: 4 },
-      // Control & urgency — general
+      { group: 'Control & urgency' },
       { text: '"I need to fix this NOW"', score: 3 },
       { text: 'Micromanaging in my head', score: 2 },
       { text: 'Controlling how others act', score: 3 },
@@ -1471,6 +1481,17 @@ function cancelCheckin() {
   showScreen('home');
 }
 
+function renderChipsWithGroups(items, dim, selected) {
+  return items.map(d => {
+    if (d.group) return `<div class="chip-group-label">${d.group}</div>`;
+    return `<span class="chip ${selected.includes(d.text) ? 'selected' : ''}" onclick="toggleChip(this, '${dim}', '${d.text.replace(/'/g, "\\'")}')">${d.text}</span>`;
+  }).join('');
+}
+
+function getDescriptorItems(arr) {
+  return arr.filter(d => d.text);
+}
+
 function renderCheckinStep() {
   const dim = STEPS[checkinState.step];
   const meta = DIMENSION_META[dim];
@@ -1498,33 +1519,33 @@ function renderCheckinStep() {
     <p class="dimension-subtitle">${meta.subtitle}</p>
     <p style="font-size:0.75rem;color:var(--dusk);margin-bottom:16px;padding:8px 12px;background:var(--sand);border-radius:8px;">Tap everything that fits — you can pick from multiple zones. Sleepy AND tense? Select both.</p>
 
-    <div class="zone zone-low ${selected.some(s => desc.low.find(d => d.text === s)) ? 'selected' : ''}">
+    <div class="zone zone-low ${selected.some(s => getDescriptorItems(desc.low).find(d => d.text === s)) ? 'selected' : ''}">
       <div class="zone-header">
         <span class="zone-label">${lowLabel}</span>
         <span class="zone-score-hint">low energy</span>
       </div>
       <div class="zone-chips">
-        ${desc.low.map(d => `<span class="chip ${selected.includes(d.text) ? 'selected' : ''}" onclick="toggleChip(this, '${dim}', '${d.text.replace(/'/g, "\\'")}')">${d.text}</span>`).join('')}
+        ${renderChipsWithGroups(desc.low, dim, selected)}
       </div>
     </div>
 
-    <div class="zone zone-center ${selected.some(s => desc.center.find(d => d.text === s)) ? 'selected' : ''}">
+    <div class="zone zone-center ${selected.some(s => getDescriptorItems(desc.center).find(d => d.text === s)) ? 'selected' : ''}">
       <div class="zone-header">
         <span class="zone-label">${centerLabel}</span>
         <span class="zone-score-hint">open &amp; flexible</span>
       </div>
       <div class="zone-chips">
-        ${desc.center.map(d => `<span class="chip ${selected.includes(d.text) ? 'selected' : ''}" onclick="toggleChip(this, '${dim}', '${d.text.replace(/'/g, "\\'")}')">${d.text}</span>`).join('')}
+        ${renderChipsWithGroups(desc.center, dim, selected)}
       </div>
     </div>
 
-    <div class="zone zone-high ${selected.some(s => desc.high.find(d => d.text === s)) ? 'selected' : ''}">
+    <div class="zone zone-high ${selected.some(s => getDescriptorItems(desc.high).find(d => d.text === s)) ? 'selected' : ''}">
       <div class="zone-header">
         <span class="zone-label">${highLabel}</span>
         <span class="zone-score-hint">high energy</span>
       </div>
       <div class="zone-chips">
-        ${desc.high.map(d => `<span class="chip ${selected.includes(d.text) ? 'selected' : ''}" onclick="toggleChip(this, '${dim}', '${d.text.replace(/'/g, "\\'")}')">${d.text}</span>`).join('')}
+        ${renderChipsWithGroups(desc.high, dim, selected)}
       </div>
     </div>
   `;
@@ -1545,7 +1566,7 @@ function toggleChip(el, dim, text) {
   const desc = DESCRIPTORS[dim];
   document.querySelectorAll('.zone').forEach(z => z.classList.remove('selected'));
   ['low', 'center', 'high'].forEach(zone => {
-    if (sel.some(s => desc[zone].find(d => d.text === s))) {
+    if (sel.some(s => getDescriptorItems(desc[zone]).find(d => d.text === s))) {
       const zoneEl = document.querySelector('.zone-' + zone);
       if (zoneEl) zoneEl.classList.add('selected');
     }
@@ -1577,7 +1598,7 @@ function calcDimensionScore(dim) {
   // mixed = true if you selected from both low AND high zones
   const sel = checkinState.selections[dim];
   const desc = DESCRIPTORS[dim];
-  const all = [...desc.low, ...desc.center, ...desc.high];
+  const all = [...desc.low, ...desc.center, ...desc.high].filter(d => d.text);
   let totalSigned = 0, totalAbs = 0, count = 0;
   let hasLow = false, hasHigh = false;
   sel.forEach(text => {
