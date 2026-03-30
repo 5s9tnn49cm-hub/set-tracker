@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(function(regs) {
+    regs.forEach(function(reg) { reg.update(); });
+  });
+}
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -212,11 +219,14 @@ h1, h2, h3 { font-family: 'Lora', Georgia, serif; font-weight: 500; }
   font-size: 0.85rem; font-weight: 400;
   cursor: pointer; transition: all 0.15s;
   border: 1.5px solid transparent;
+  background: none; outline: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
   user-select: none; -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
-  min-height: 42px; display: flex; align-items: center;
-  position: relative; z-index: 1; pointer-events: auto;
+  min-height: 42px; display: inline-flex; align-items: center;
+  position: relative; z-index: 1;
+  -webkit-appearance: none; appearance: none;
 }
 .zone-low .chip { background: rgba(255,255,255,0.5); color: var(--bark); }
 .zone-low .chip.selected { background: var(--sienna); color: white; border-color: var(--sienna); }
@@ -558,7 +568,7 @@ select.setting-select:focus { outline: none; border-color: var(--sienna); }
             stroke-dasharray="377" stroke-dashoffset="377"/>
         </svg>
         <div class="score-ring-label">
-          <div class="score-ring-number" id="score-ring-number">—</div>
+          <div class="score-ring-number" id="score-ring-number">â</div>
           <div class="score-ring-text">distance from centre</div>
         </div>
       </div>
@@ -753,7 +763,7 @@ select.setting-select:focus { outline: none; border-color: var(--sienna); }
 <!-- ===== ALARM OVERLAY ===== -->
 <div class="alarm-overlay" id="alarm-overlay">
   <div class="alarm-card-popup">
-    <div class="alarm-icon">🔔</div>
+    <div class="alarm-icon">ð</div>
     <h3 class="alarm-popup-title">Time to check in</h3>
     <p class="alarm-popup-sub">Pause. Notice. No judgments.</p>
     <button class="alarm-popup-btn" onclick="alarmCheckin()">Check In</button>
@@ -766,21 +776,21 @@ select.setting-select:focus { outline: none; border-color: var(--sienna); }
   <div class="modal-sheet">
     <h3>Export Your Data</h3>
     <div class="modal-option" onclick="exportCSV()">
-      <span class="modal-option-icon">📊</span>
+      <span class="modal-option-icon">ð</span>
       <div>
         <div class="modal-option-text">CSV Spreadsheet</div>
         <div class="modal-option-hint">Open in Excel or Google Sheets</div>
       </div>
     </div>
     <div class="modal-option" onclick="exportTherapist()">
-      <span class="modal-option-icon">📋</span>
+      <span class="modal-option-icon">ð</span>
       <div>
         <div class="modal-option-text">Therapist Report</div>
         <div class="modal-option-hint">Formatted summary with patterns and insights</div>
       </div>
     </div>
     <div class="modal-option" onclick="exportJSON()">
-      <span class="modal-option-icon">💾</span>
+      <span class="modal-option-icon">ð¾</span>
       <div>
         <div class="modal-option-text">Full Backup (JSON)</div>
         <div class="modal-option-hint">All raw data for import/backup</div>
@@ -1231,7 +1241,7 @@ const DESCRIPTORS = {
       { text: 'Obsessing over a purchase/plan', score: 2 },
       { group: 'Trading fantasies' },
       { text: 'Counting profits before entry', score: 4 },
-      { text: '"When I make £500 today..."', score: 4 },
+      { text: '"When I make Â£500 today..."', score: 4 },
       { group: 'Demanding & entitled' },
       { text: 'Demanding success now', score: 4 },
       { text: '"I need this trade"', score: 5 },
@@ -1277,20 +1287,20 @@ const DESCRIPTORS = {
 };
 
 const DIMENSION_META = {
-  sensations: { title: 'Sensations', subtitle: 'Take a trip from your nose to your toes. What is your body telling you right now? Just notice — don\'t try to change anything.', color: '#B87333', short: 'S' },
-  emotions: { title: 'Emotions', subtitle: 'What feelings are present? Not what you think you should feel — what IS here, right now. Welcome it with open arms.', color: '#8B9E6B', short: 'E' },
+  sensations: { title: 'Sensations', subtitle: 'Take a trip from your nose to your toes. What is your body telling you right now? Just notice â don\'t try to change anything.', color: '#B87333', short: 'S' },
+  emotions: { title: 'Emotions', subtitle: 'What feelings are present? Not what you think you should feel â what IS here, right now. Welcome it with open arms.', color: '#8B9E6B', short: 'E' },
   thoughts: { title: 'Thoughts', subtitle: 'What stories is your mind telling? Are there voices, rehearsals, fantasies running? Just notice them like clouds passing.', color: '#9E8B7E', short: 'T' }
 };
 
 const QUOTES = [
-  '"Just notice. No discipline, no force, no judgments." — Richard Friesen',
-  '"You are the observer who watches the ES. The P&L does not define you." — Your Protocol',
-  '"Who looks outside, dreams; who looks inside, awakes." — Carl Jung',
-  '"The carefree state is not the absence of caring. It is the presence of the one who watches." — Your Protocol',
-  '"Your visions will become clear only when you can look into your own heart." — Carl Jung',
-  '"Whatever you become aware of is OK. You are just gathering data." — Richard Friesen',
-  '"The shame of being wrong was installed before you ever placed a trade." — Your Protocol',
-  '"You are just a curious anthropologist on an adventure to your own body." — Richard Friesen',
+  '"Just notice. No discipline, no force, no judgments." â Richard Friesen',
+  '"You are the observer who watches the ES. The P&L does not define you." â Your Protocol',
+  '"Who looks outside, dreams; who looks inside, awakes." â Carl Jung',
+  '"The carefree state is not the absence of caring. It is the presence of the one who watches." â Your Protocol',
+  '"Your visions will become clear only when you can look into your own heart." â Carl Jung',
+  '"Whatever you become aware of is OK. You are just gathering data." â Richard Friesen',
+  '"The shame of being wrong was installed before you ever placed a trade." â Your Protocol',
+  '"You are just a curious anthropologist on an adventure to your own body." â Richard Friesen',
 ];
 
 // ===== STATE =====
@@ -1382,7 +1392,7 @@ function renderTimeList(schedule) {
   const container = document.getElementById(schedule + '-times');
   const times = settings[key] || [];
   if (times.length === 0) {
-    container.innerHTML = '<div class="time-list-empty">No times set — tap + Add</div>';
+    container.innerHTML = '<div class="time-list-empty">No times set â tap + Add</div>';
     return;
   }
   // Sort times for display
@@ -1391,7 +1401,7 @@ function renderTimeList(schedule) {
     const origIndex = times.indexOf(t);
     return `<div class="time-pill">
       <input type="time" value="${t}" onchange="updateTimeSlot('${schedule}',${origIndex},this.value)">
-      <button class="remove-time" onclick="removeTimeSlot('${schedule}',${origIndex})">×</button>
+      <button class="remove-time" onclick="removeTimeSlot('${schedule}',${origIndex})">Ã</button>
     </div>`;
   }).join('');
 }
@@ -1455,7 +1465,7 @@ function updateHomeScreen() {
 
   if (todayEntries.length === 0) {
     list.innerHTML = '<p class="no-entries">Start your first check-in to see entries here</p>';
-    document.getElementById('score-ring-number').textContent = '—';
+    document.getElementById('score-ring-number').textContent = 'â';
     document.getElementById('score-ring-fill').style.strokeDashoffset = 377;
     document.getElementById('last-checkin-label').textContent = 'No check-ins yet today';
     document.getElementById('home-dimension-scores').style.display = 'none';
@@ -1512,7 +1522,7 @@ function cancelCheckin() {
 function renderChipsWithGroups(items, dim, selected) {
   return items.map((d, i) => {
     if (d.group) return `<div class="chip-group-label">${d.group}</div>`;
-    return `<span class="chip ${selected.includes(d.text) ? 'selected' : ''}" data-dim="${dim}" data-text="${d.text.replace(/"/g, '&quot;')}" role="button" tabindex="0">${d.text}</span>`;
+    return `<button type="button" class="chip ${selected.includes(d.text) ? 'selected' : ''}" data-dim="${dim}" data-text="${d.text.replace(/"/g, '&quot;')}">${d.text}</button>`;
   }).join('');
 }
 
@@ -1545,7 +1555,7 @@ function renderCheckinStep() {
   const html = `
     <h2 class="dimension-title" style="color:${meta.color}">${meta.title}</h2>
     <p class="dimension-subtitle">${meta.subtitle}</p>
-    <p style="font-size:0.75rem;color:var(--dusk);margin-bottom:16px;padding:8px 12px;background:var(--sand);border-radius:8px;">Tap everything that fits — you can pick from multiple zones. Sleepy AND tense? Select both.</p>
+    <p style="font-size:0.75rem;color:var(--dusk);margin-bottom:16px;padding:8px 12px;background:var(--sand);border-radius:8px;">Tap everything that fits â you can pick from multiple zones. Sleepy AND tense? Select both.</p>
 
     <div class="zone zone-low ${selected.some(s => getDescriptorItems(desc.low).find(d => d.text === s)) ? 'selected' : ''}">
       <div class="zone-header">
@@ -1646,7 +1656,7 @@ function calcDimensionScore(dim) {
 
 function scoreLabel(result) {
   const d = result.distance;
-  if (result.mixed) return 'Mixed — pulled both ways';
+  if (result.mixed) return 'Mixed â pulled both ways';
   if (d <= 0.5) return 'Centred';
   if (d <= 1.5) return 'Slightly off-centre';
   if (d <= 2.5) return 'Moderately off-centre';
@@ -1655,12 +1665,12 @@ function scoreLabel(result) {
 }
 
 function compositeLabel(set) {
-  if (set <= 0.5) return 'Deeply centred — ideal trading state';
-  if (set <= 1) return 'Near centre — good awareness';
-  if (set <= 1.5) return 'Slight drift — stay curious';
-  if (set <= 2.5) return 'Moderate drift — check your hypothesis';
-  if (set <= 3.5) return 'Significant drift — consider minimum size';
-  return 'Far from centre — consider stepping away';
+  if (set <= 0.5) return 'Deeply centred â ideal trading state';
+  if (set <= 1) return 'Near centre â good awareness';
+  if (set <= 1.5) return 'Slight drift â stay curious';
+  if (set <= 2.5) return 'Moderate drift â check your hypothesis';
+  if (set <= 3.5) return 'Significant drift â consider minimum size';
+  return 'Far from centre â consider stepping away';
 }
 
 // ===== SUMMARY =====
@@ -1695,7 +1705,7 @@ function showSummary() {
           <div class="summary-dim-label">${meta.short}</div>
           <div class="summary-dim-score" style="background:${meta.color}">${displayScore}</div>
           <div class="summary-dim-word">${scoreLabel(r)}</div>
-          <div style="font-size:0.65rem;color:var(--dusk);margin-top:2px;">${direction} · dist ${r.distance.toFixed(1)}</div>
+          <div style="font-size:0.65rem;color:var(--dusk);margin-top:2px;">${direction} Â· dist ${r.distance.toFixed(1)}</div>
         </div>`;
       }).join('')}
     </div>
@@ -1753,7 +1763,7 @@ function saveCheckin() {
 const SYNC_URL = 'https://script.google.com/a/macros/drsivacoaching.com/s/AKfycbyPKyaKGx374bzyA6YjJ7BOPOsWsIa_mF4eNq3FgNRBlX_TOGARE6NVECDqbzXsWkKJLA/exec';
 
 function syncToSheet(entry) {
-  // Fire and forget — don't block the UI
+  // Fire and forget â don't block the UI
   fetch(SYNC_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'text/plain' },
@@ -1813,7 +1823,7 @@ function renderHistory() {
     const label = d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
     const avg = (items.reduce((a, e) => a + e.setScore, 0) / items.length).toFixed(1);
     return `<div class="date-group">
-      <div class="date-label">${label} · ${items.length} check-in${items.length > 1 ? 's' : ''} · avg ${avg}</div>
+      <div class="date-label">${label} Â· ${items.length} check-in${items.length > 1 ? 's' : ''} Â· avg ${avg}</div>
       ${items.map(e => {
         const time = new Date(e.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         const allChips = [...(e.selections.sensations || []), ...(e.selections.emotions || []), ...(e.selections.thoughts || [])];
@@ -1857,7 +1867,7 @@ function showEntryDetail(id) {
       const meta = DIMENSION_META[dim];
       const chips = (e.selections[dim] || []).map(t => `<span class="detail-chip" style="background:${meta.color}">${t}</span>`).join('');
       return chips ? `<div class="detail-section">
-        <div class="detail-section-title">${meta.title} — distance: ${(e.distances ? e.distances[dim] : Math.abs(e.scores[dim])).toFixed(1)}${e.mixed && e.mixed[dim] ? ' (mixed)' : ''}</div>
+        <div class="detail-section-title">${meta.title} â distance: ${(e.distances ? e.distances[dim] : Math.abs(e.scores[dim])).toFixed(1)}${e.mixed && e.mixed[dim] ? ' (mixed)' : ''}</div>
         <div class="detail-chips">${chips}</div>
       </div>` : '';
     }).join('')}
@@ -1880,7 +1890,7 @@ function getActiveSchedule() {
   if (isWeekend()) {
     return { enabled: settings.weekendAlarmEnabled, times: settings.weekendTimes || [], label: 'Weekend' };
   }
-  // Weekday: check if any trading time is within ±15 min to decide label
+  // Weekday: check if any trading time is within Â±15 min to decide label
   return null; // handled by combined check below
 }
 
@@ -1924,7 +1934,7 @@ function triggerAlarm() {
   document.getElementById('alarm-overlay').classList.add('active');
   if (settings.soundEnabled) playAlarmSound();
   if (Notification.permission === 'granted') {
-    try { new Notification('S.E.T. Check-in', { body: 'Pause. Notice. No judgments.', icon: '🔔' }); } catch(e) {}
+    try { new Notification('S.E.T. Check-in', { body: 'Pause. Notice. No judgments.', icon: 'ð' }); } catch(e) {}
   }
 }
 
@@ -1972,7 +1982,7 @@ function updateAlarmDisplay() {
     .sort((a, b) => a.mins - b.mins);
   const next = sorted.find(t => t.mins > currentMins) || sorted[0];
   const nextLabel = next ? `Next: ${next.time} (${next.label})` : '';
-  text.textContent = `${activeTimes.length} check-ins today · ${nextLabel}`;
+  text.textContent = `${activeTimes.length} check-ins today Â· ${nextLabel}`;
 }
 
 // ===== NOTIFICATIONS =====
@@ -2031,7 +2041,7 @@ function exportTherapist() {
     if (sorted.length > 0) {
       report += `MOST FREQUENT EXPERIENCES:\n`;
       sorted.slice(0, 10).forEach(([text, count]) => {
-        report += `  · ${text} (${count} times, ${Math.round(count/entries.length*100)}% of check-ins)\n`;
+        report += `  Â· ${text} (${count} times, ${Math.round(count/entries.length*100)}% of check-ins)\n`;
       });
       report += '\n';
     }
