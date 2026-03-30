@@ -1457,9 +1457,9 @@ function updateHomeScreen() {
     return `<div class="entry-mini" onclick="showEntryDetail('${e.id}')">
       <span class="entry-time">${time}</span>
       <div class="entry-dots">
-        <span class="entry-dot s">${(e.distances ? e.distances.sensations : Math.abs(e.scores.sensations)).toFixed(0)}</span>
-        <span class="entry-dot e">${(e.distances ? e.distances.emotions : Math.abs(e.scores.emotions)).toFixed(0)}</span>
-        <span class="entry-dot t">${(e.distances ? e.distances.thoughts : Math.abs(e.scores.thoughts)).toFixed(0)}</span>
+        <span class="entry-dot s" title="Sensations">${e.scores.sensations >= 0 ? (e.scores.sensations > 0 ? '+' : '') : ''}${e.scores.sensations.toFixed(0)}</span>
+        <span class="entry-dot e" title="Emotions">${e.scores.emotions >= 0 ? (e.scores.emotions > 0 ? '+' : '') : ''}${e.scores.emotions.toFixed(0)}</span>
+        <span class="entry-dot t" title="Thoughts">${e.scores.thoughts >= 0 ? (e.scores.thoughts > 0 ? '+' : '') : ''}${e.scores.thoughts.toFixed(0)}</span>
       </div>
       <span class="entry-set">${e.setScore.toFixed(1)}</span>
     </div>`;
@@ -1660,10 +1660,14 @@ function showSummary() {
       ${['sensations', 'emotions', 'thoughts'].map(dim => {
         const r = results[dim];
         const meta = DIMENSION_META[dim];
+        const sign = r.signed > 0.05 ? '+' : r.signed < -0.05 ? '' : '';
+        const displayScore = r.signed > 0.05 || r.signed < -0.05 ? sign + r.signed.toFixed(1) : '0';
+        const direction = r.mixed ? 'mixed' : r.signed > 0.05 ? 'high' : r.signed < -0.05 ? 'low' : 'centre';
         return `<div class="summary-dim">
           <div class="summary-dim-label">${meta.short}</div>
-          <div class="summary-dim-score" style="background:${meta.color}">${r.distance.toFixed(1)}</div>
+          <div class="summary-dim-score" style="background:${meta.color}">${displayScore}</div>
           <div class="summary-dim-word">${scoreLabel(r)}</div>
+          <div style="font-size:0.65rem;color:var(--dusk);margin-top:2px;">${direction} · dist ${r.distance.toFixed(1)}</div>
         </div>`;
       }).join('')}
     </div>
